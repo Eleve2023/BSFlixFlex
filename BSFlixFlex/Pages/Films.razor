@@ -1,0 +1,13 @@
+﻿@page "/films"
+@inherits Discover<Movie>
+
+<h3>Films</h3>
+<SearchInput OnSearch="OnSearch" @bind-value="Search"/>
+<Strip Items="Popular"/>
+<DiscoverCard Items="Items" PagingState="pagingState" PageUri="films" />
+@code {
+    public Films() : base(Cinematography.Movie)
+    {
+
+    }
+}

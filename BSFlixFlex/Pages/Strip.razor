@@ -1,0 +1,24 @@
+﻿@typeparam T where T : class, IDiscovryCommonProperty
+@if (Items != null)
+{
+    <div class="g-col-12 mb-3">
+        <div class="container g-col-12">
+            <div class="row d-flex justify-content-center">
+                @foreach (var item in Items)
+                {
+                    <div class="col-2">
+                        @{
+                            var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
+                        }
+                        <img src="@imgUrl" class="img-fluid" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    @* <div class="g-col-12 mb-3"> </div> *@
+}
+
+@code {
+    [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
+}

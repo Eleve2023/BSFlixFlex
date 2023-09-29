@@ -1,0 +1,17 @@
+﻿@page "/series"
+@inherits Discover<TvShow>
+
+<h3>Series</h3>
+<div class="grid row">
+
+    <SearchInput OnSearch="OnSearch" @bind-Value="@Search" />
+    <Strip Items="Popular" />
+    <DiscoverCard Items="Items" PagingState="pagingState" PageUri="series" />
+
+</div>
+@code {
+    public Series():base(Cinematography.Tv)
+    {
+        
+    }
+}
