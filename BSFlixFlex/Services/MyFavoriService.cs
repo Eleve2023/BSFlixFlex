@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
+using System.Security.Claims;
 namespace BSFlixFlex.Services;
 
 public class MyFavoriService()
@@ -23,10 +24,17 @@ public class MyFavoriService()
         this.userManager = userManager;
     }
 
-    public async  Task<IdentityUser?> GetIdentityUserAsync()
+    public async Task<IdentityUser?> GetIdentityUserAsync(ClaimsPrincipal? claimsPrincipal)
     {
-        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-        var claims = authState.User;
+        ClaimsPrincipal claims;
+
+        if (claimsPrincipal is null)
+        {
+            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            claims = authState.User;
+        }
+        else
+            claims = claimsPrincipal;
         if (claims != null)
         {
             var identity = claims.Identity;
@@ -38,11 +46,11 @@ public class MyFavoriService()
         return null;
     }
 
-    public async Task<List<IDiscovryCommonProperty>?> GetMyListFavorisAsync()
+    public async Task<List<IDiscovryCommonProperty>?> GetMyListFavorisAsync(ClaimsPrincipal? claimsPrincipal = null)
     {
         List<IDiscovryCommonProperty> myFavoris = [];
 
-        if (await GetIdentityUserAsync() is IdentityUser user)
+        if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)
         {
             var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(user.Id)).ToArray();
             if (_myFav.Length > 0)
@@ -50,13 +58,20 @@ public class MyFavoriService()
                 foreach (var fav in _myFav)
                 {
                     IDiscovryCommonProperty? item = null;
-                    if (fav.Cinematography == Cinematography.Movie)
+                    try
                     {
-                        item = await httpClient.GetFromJsonAsync<Movie>($"3/{fav.Cinematography.ToString().ToLower()}/{fav.IdCinematography}?language=fr-Fr");
+                        if (fav.Cinematography == Cinematography.Movie)
+                        {
+                            item = await httpClient.GetFromJsonAsync<Movie>($"3/{fav.Cinematography.ToString().ToLower()}/{fav.IdCinematography}?language=fr-Fr");
+                        }
+                        if (fav.Cinematography == Cinematography.Tv)
+                        {
+                            item = await httpClient.GetFromJsonAsync<TvShow>($"3/{fav.Cinematography.ToString().ToLower()}/{fav.IdCinematography}?language=fr-Fr");
+                        }
                     }
-                    if (fav.Cinematography == Cinematography.Tv)
+                    catch (Exception)
                     {
-                        item = await httpClient.GetFromJsonAsync<TvShow>($"3/{fav.Cinematography.ToString().ToLower()}/{fav.IdCinematography}?language=fr-Fr");
+                       
                     }
                     if (item != null)
                         myFavoris.Add(item);
@@ -68,9 +83,9 @@ public class MyFavoriService()
 
     }
 
-    public async Task<bool> IsFavoriAsync(int id, Cinematography cinematography)
+    public async Task<bool> IsFavoriAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
     {
-        if (await GetIdentityUserAsync() is IdentityUser user)
+        if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)
         {
             var myFavorite = await appDbContext.Set<MyFavorite>().Where(x => x.IdCinematography == id && x.Cinematography == cinematography && x.UserId == new Guid(user.Id)).FirstOrDefaultAsync();
             if (myFavorite != null)
@@ -80,17 +95,31 @@ public class MyFavoriService()
         }
         return false;
     }
-    public async void AddFavori(int id, Cinematography cinematography)
+    public async void AddFavori(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
     {
-        if (await GetIdentityUserAsync() is IdentityUser user)
+        if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)
         {
-            await appDbContext.Set<MyFavorite>().AddAsync(new() { Cinematography = cinematography, UserId = new Guid(user.Id), IdCinematography = id });
-            await appDbContext.SaveChangesAsync();
+            DiscovryCommonProperty? item;
+            try
+            {
+                item = await httpClient.GetFromJsonAsync<DiscovryCommonProperty>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            if (item != null)
+            {
+                await appDbContext.Set<MyFavorite>().AddAsync(new() { Cinematography = cinematography, UserId = new Guid(user.Id), IdCinematography = id });
+                await appDbContext.SaveChangesAsync();
+            }
         }
     }
-    public async void Remove(int id, Cinematography cinematography)
+    public async void Remove(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
     {
-        if (await GetIdentityUserAsync() is IdentityUser user)
+
+        if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)
         {
             var myFavorites = appDbContext.Set<MyFavorite>().Where(x => x.IdCinematography == id && x.Cinematography == cinematography && x.UserId == new Guid(user.Id));
             appDbContext.RemoveRange(myFavorites);
