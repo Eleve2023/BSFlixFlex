@@ -19,14 +19,14 @@ namespace BSFlixFlex.Pages
 
 
         [Inject] public required HttpClient HttpClient { get; set; }
-        public List<T>? Popular { get; set; }
+        public List<T>? TopRated { get; set; }
         public List<T>? Items { get; set; }
         public string? Search { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            var resultListMovie = await HttpClient.GetFromJsonAsync<DiscoverResponse<T>>($"3/{cinematography}/popular?language=fr-Fr");
-            Popular = resultListMovie.Results.Take(5).ToList();
+            var resultListMovie = await HttpClient.GetFromJsonAsync<DiscoverResponse<T>>($"3/{cinematography}/top_rated?language=fr-Fr");
+            TopRated = resultListMovie.Results.Take(5).ToList();
             pagingState.PageChanged += PagingState_PageChanged;
             pagingState.CurrentPage = 1;
             await base.OnInitializedAsync();
@@ -45,7 +45,7 @@ namespace BSFlixFlex.Pages
                     DiscoverResponse<T>? resultListMovie;
                     if (string.IsNullOrEmpty(Search))
                     {
-                        resultListMovie = HttpClient.GetFromJsonAsync<DiscoverResponse<T>>($"4/discover/{cinematography}?page={(pagingState.CurrentPage + 1) / 2}&language=fr-Fr&sort_by=primary_release_date.desc&with_status=Planned").Result;
+                        resultListMovie = HttpClient.GetFromJsonAsync<DiscoverResponse<T>>($"4/discover/{cinematography}?page={(pagingState.CurrentPage + 1) / 2}&language=fr-Fr").Result;
 
                     }
                     else

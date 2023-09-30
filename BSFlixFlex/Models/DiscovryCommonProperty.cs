@@ -35,5 +35,7 @@ namespace BSFlixFlex.Models
 
         [JsonPropertyName("poster_path")]
         public string? PosterPath { get; set; }
+        public virtual string? Title { get; set; }
+        public virtual string? OriginalTitle { get; set; }
     }
 }

@@ -21,13 +21,13 @@ namespace BSFlixFlex.Models
         public TvShowEpisode? LastEpisodeToAir { get; set; }
 
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public override string? Title { get; set; }
 
         [JsonPropertyName("episode_run_time")]
         public List<int?> EpisodeRunTime { get; set; } = new();
 
         [JsonPropertyName("first_air_date")]
-        public DateOnly? FirstAirDate { get; set; }
+        public string? FirstAirDate { get; set; }
 
         [JsonPropertyName("next_episode_to_air")]
         public TvShowEpisode? NextEpisodeToAir { get; set; }

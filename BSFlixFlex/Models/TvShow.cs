@@ -10,10 +10,10 @@ namespace BSFlixFlex.Models
     public class TvShow : DiscovryCommonProperty
     {
         [JsonPropertyName("original_name")]
-        public string? OriginalName { get; set; }
+        public override string? OriginalTitle { get; set; }
 
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public override string? Title { get; set; }
 
         [JsonPropertyName("origin_country")]
         public List<string>? OriginCountry { get; set; }

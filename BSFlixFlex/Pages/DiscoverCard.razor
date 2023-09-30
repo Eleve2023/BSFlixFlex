@@ -21,7 +21,7 @@
                                 if (item is Movie movie)
                                     header = movie.Title;
                                 if (item is TvShow tvShow)
-                                    header = tvShow.Name;
+                                    header = tvShow.Title;
                             }
                             @header
                         </div>
@@ -46,7 +46,12 @@
                         </div>
                         <div class="card-footer">
                             @{
-                                var href = $"/{PageUri}/{item.Id}";
+                                var pageUri = string.Empty;
+                                if (item is Movie)
+                                    pageUri = "films" ;
+                                if (item is TvShow)
+                                    pageUri = "series";
+                                var href = $"/{pageUri}/{item.Id}";
                             }
                             <a class="btm btm-info" href="@href">plus info </a>
                         </div>
@@ -58,7 +63,7 @@
 
         }
     </div>
-    <MoviesDigitalFactory.Components.Pagination.GridPaging PaginationState="PagingState" />
+    <GridPaging PaginationState="PagingState" />
 </div>
 @code {
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }

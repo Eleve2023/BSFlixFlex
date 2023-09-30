@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering;
+@typeparam T where T : IDiscovryCommonProperty
+<h3>Details</h3>
+
+@code {
+    private void BtmFavoriRender(RenderTreeBuilder __builder)
+    {
+        if(isFavori)
+        {
+            <button @onclick="RemoveFavori">supprime de mes favorie</button>
+        }
+        else
+        {
+            <button @onclick="AddFavori">ajoute a de mes favorie</button>            
+        }
+
+    }
+}

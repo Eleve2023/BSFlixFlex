@@ -16,10 +16,10 @@ namespace BSFlixFlex.Models
         public string? ReleaseDate { get; set; }
 
         [JsonPropertyName("original_title")]
-        public string? OriginalTitle { get; set; }
+        public override string? OriginalTitle { get; set; }
 
         [JsonPropertyName("title")]
-        public string? Title { get; set; }
+        public override string? Title { get; set; }
 
         [JsonPropertyName("video")]
         public bool? Video { get; set; }

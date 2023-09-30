@@ -1,0 +1,40 @@
+﻿@page "/favoris"
+@using BSFlixFlex.Pages.Pagination;
+@using BSFlixFlex.Services;
+@inject MyFavoriService MyService
+
+<h3>Favoris</h3>
+
+@if (myFavDisplay != null)
+{
+    <DiscoverCard Items="myFavDisplay" PageUri="" PagingState="pagingState" />
+
+}
+@code {
+    private List<IDiscovryCommonProperty>? myFavDisplay;
+    private List<IDiscovryCommonProperty>? myFavorites;
+    private IQueryable<IDiscovryCommonProperty> queryMyFav= default!;
+    private GridPagingState pagingState = new(10);
+
+    protected override async Task OnInitializedAsync()
+    {
+        pagingState.PageChanged += PagingState_PageChanged;
+        myFavorites = (await MyService.GetMyListFavorisAsync());
+        if (myFavorites != null)
+            queryMyFav = myFavorites.AsQueryable();
+
+        pagingState.CurrentPage = 1;
+        await base.OnInitializedAsync();
+    }
+    private void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
+    {
+        e.TotalItems = queryMyFav.Count();
+        var queryable = queryMyFav;
+        if (e.Skip > 0)
+            queryable = queryable.Skip(e.Skip);
+        queryable = queryable.Take(e.ItemsPerPage);
+        myFavDisplay = queryable.ToList();
+        StateHasChanged();
+    }
+
+}

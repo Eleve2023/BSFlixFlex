@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BSFlixFlex.Migrations
+namespace BSFlixFlex.Migrations.ApplicationDb
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

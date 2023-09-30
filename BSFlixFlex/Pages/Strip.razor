@@ -6,11 +6,19 @@
             <div class="row d-flex justify-content-center">
                 @foreach (var item in Items)
                 {
+                    var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
+                    var pageUri = string.Empty;
+                    if (item is Movie)
+                        pageUri = "films";
+                    if (item is TvShow)
+                        pageUri = "series";
+                    var href = $"/{pageUri}/{item.Id}";
+
                     <div class="col-2">
-                        @{
-                            var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
-                        }
-                        <img src="@imgUrl" class="img-fluid" />
+
+                        <a href="@href">
+                            <img src="@imgUrl" class="img-fluid" />
+                        </a>
                     </div>
                 }
             </div>

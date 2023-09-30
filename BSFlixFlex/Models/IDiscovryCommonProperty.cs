@@ -11,5 +11,7 @@
         string? PosterPath { get; set; }
         double? VoteAverage { get; set; }
         int? VoteCount { get; set; }
+        string? Title { get; set; }
+        string? OriginalTitle { get; set; }
     }
 }
