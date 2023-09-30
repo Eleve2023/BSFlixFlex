@@ -9,6 +9,8 @@ namespace BSFlixFlex.Models
 
         [JsonPropertyName("results")]
         public List<Video?> Results { get; set; } = new();
+        public bool IsSuccess { get; set; }
+        public string? Message { get; set; }
     }
 
 }

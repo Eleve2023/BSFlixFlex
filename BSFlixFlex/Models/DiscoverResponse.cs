@@ -19,6 +19,7 @@ namespace BSFlixFlex.Models
         public int TotalResults { get; set; }
 
         [JsonPropertyName("total_pages")]
-        public int TotalPages { get; set; }
+        public int TotalPages { get; set; }        
+
     }
 }
