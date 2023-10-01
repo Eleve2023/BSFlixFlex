@@ -5,21 +5,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace BSFlixFlex.Pages
 {
-    public abstract class Discover<T> : ComponentBase where T : class
+    public abstract class Discover<T>(Cinematography cinematography) : ComponentBase where T : class
     {
-        private readonly Cinematography cinematography;
-        protected GridPagingState pagingState;
-        private int currentPage;
-        private List<T>? waitingList;
-        private string? _search;
-        public Discover(Cinematography cinematography)
-        {
-            pagingState = new GridPagingState(10);
-            this.cinematography = cinematography;
-        }
-
-
-        [Inject] public required HttpClient HttpClient { get; set; }
+        private readonly Cinematography cinematography = cinematography;
+        protected GridPagingState pagingState = new(10);
+       
         [Inject] public required ApiTMBDService ApiTMBDService { get; set; }
         public List<T>? TopRated { get; set; }
         public List<T>? Items { get; set; }
@@ -29,38 +19,37 @@ namespace BSFlixFlex.Pages
         {
             var listResponse = await ApiTMBDService.GetTopRateAsync<T>(cinematography, 1, 5);
             TopRated = listResponse.Items;
-            var listResponse2 = await ApiTMBDService.GetDiscoverAsync<T>(cinematography, 1, pagingState.ItemsPerPage);
-            if (listResponse2.TotalItems > 10000)
-                pagingState.TotalItems = 10000;
-            else
-                pagingState.TotalItems = listResponse2.TotalItems;
-            Items = listResponse2.Items;
-            //var resultListMovie = await HttpClient.GetFromJsonAsync<DiscoverResponse<T>>($"3/{cinematography.ToString().ToLower()}/top_rated?language=fr-Fr");
-            //TopRated = resultListMovie.Results.Take(5).ToList();
+            await FillItemsAsync(cinematography, 1, pagingState.ItemsPerPage);            
+
             pagingState.PageChanged += PagingState_PageChanged;
-            //pagingState.CurrentPage = 1;
+            
             await base.OnInitializedAsync();
         }
         private async void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
         {
+            await FillItemsAsync(cinematography,pagingState.CurrentPage, e.ItemsPerPage);
+
+            StateHasChanged();
+        }
+
+        private async Task FillItemsAsync(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10)
+        {
             ListResponse<T> listResponse;
             if (string.IsNullOrEmpty(Search))
-                 listResponse = await ApiTMBDService.GetDiscoverAsync<T>(cinematography, pagingState.CurrentPage, e.ItemsPerPage);
+                listResponse = await ApiTMBDService.GetDiscoverAsync<T>(cinematography, clientPageNumber, clientPageSize);
             else
-                 listResponse = await ApiTMBDService.GetSearchAsync<T>(cinematography,Search, pagingState.CurrentPage, e.ItemsPerPage);
+                listResponse = await ApiTMBDService.GetSearchAsync<T>(cinematography, Search, clientPageNumber, clientPageSize);
 
             if (listResponse.TotalItems > 10000)
                 pagingState.TotalItems = 10000;
             else
                 pagingState.TotalItems = listResponse.TotalItems;
             Items = listResponse.Items;
-            
-            StateHasChanged();
         }
+
         protected void OnSearch()
         {
-            waitingList = null;
-            _search = Search;
+            Items = null;            
             pagingState.CurrentPage = 1;
         }
     }

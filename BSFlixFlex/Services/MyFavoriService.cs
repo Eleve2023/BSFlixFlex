@@ -9,21 +9,8 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 namespace BSFlixFlex.Services;
 
-public class MyFavoriService()
+public class MyFavoriService(AppDbContext appDbContext, HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, UserManager<IdentityUser> userManager)
 {
-    readonly AppDbContext appDbContext;
-    readonly HttpClient httpClient;
-    private readonly AuthenticationStateProvider authenticationStateProvider;
-    readonly UserManager<IdentityUser> userManager;
-
-    public MyFavoriService(AppDbContext appDbContext, HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, UserManager<IdentityUser> userManager) : this()
-    {
-        this.appDbContext = appDbContext;
-        this.httpClient = httpClient;
-        this.authenticationStateProvider = authenticationStateProvider;
-        this.userManager = userManager;
-    }
-
     public async Task<IdentityUser?> GetIdentityUserAsync(ClaimsPrincipal? claimsPrincipal)
     {
         ClaimsPrincipal claims;
@@ -71,7 +58,7 @@ public class MyFavoriService()
                     }
                     catch (Exception)
                     {
-                       
+
                     }
                     if (item != null)
                         myFavoris.Add(item);
@@ -95,14 +82,17 @@ public class MyFavoriService()
         }
         return false;
     }
-    public async void AddFavori(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
+    public async Task AddFavoriAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
     {
         if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)
         {
-            DiscovryCommonProperty? item;
+            DiscovryCommonProperty? item = null;
             try
             {
-                item = await httpClient.GetFromJsonAsync<DiscovryCommonProperty>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
+                if (cinematography == Cinematography.Movie)
+                    item = await httpClient.GetFromJsonAsync<Movie>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
+                if (cinematography == Cinematography.Tv)
+                    item = await httpClient.GetFromJsonAsync<TvShow>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
             }
             catch (Exception)
             {
@@ -111,12 +101,16 @@ public class MyFavoriService()
             }
             if (item != null)
             {
-                await appDbContext.Set<MyFavorite>().AddAsync(new() { Cinematography = cinematography, UserId = new Guid(user.Id), IdCinematography = id });
-                await appDbContext.SaveChangesAsync();
+                var myFavorites = await appDbContext.Set<MyFavorite>().Where(x => x.IdCinematography == id && x.Cinematography == cinematography && x.UserId == new Guid(user.Id)).FirstOrDefaultAsync();
+                if (myFavorites is null)
+                {
+                    await appDbContext.Set<MyFavorite>().AddAsync(new() { Cinematography = cinematography, UserId = new Guid(user.Id), IdCinematography = id });
+                    await appDbContext.SaveChangesAsync();
+                }
             }
         }
     }
-    public async void Remove(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
+    public async Task RemoveAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
     {
 
         if (await GetIdentityUserAsync(claimsPrincipal) is IdentityUser user)

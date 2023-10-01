@@ -1,5 +1,6 @@
 ﻿@using BSFlixFlex.Models;
 @using BSFlixFlex.Pages.Pagination;
+@using BSFlixFlex.Services;
 @typeparam T where T : class, IDiscovryCommonProperty
 
 <div class="g-col-12">
@@ -8,52 +9,58 @@
         {
             @foreach (var item in Items)
             {
+                var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
+                var header = string.Empty;
+                var pageUri = string.Empty;
+                Cinematography cin = Cinematography.Movie;
+                if (item is Movie movie)
+                {
+                    header = movie.Title;
+                    pageUri = "films";
+                    cin = Cinematography.Movie;
+                }
+                if (item is TvShow tvShow)
+                {
+                    header = tvShow.Title;
+                    pageUri = "series";
+                    cin = Cinematography.Tv;
+                }
+                string resultat = string.Empty;
+                if (item.Overview != null)
+                {
+                    if (item.Overview.Length > 100)
+                    {
+                        resultat = item.Overview.Substring(0, 100);
+                        int dernierEspace = resultat.LastIndexOf(" ");
+                        resultat = item.Overview.Substring(0, dernierEspace) + "...";
+                    }
+                    else
+                    {
+                        resultat = item.Overview;
+                    }
+                }
+                var href = $"/{pageUri}/{item.Id}";
+
                 <div class="col">
                     <div class="card h-100 mb-1 g-col-md-1" style="width: 15rem;">
-                        @{
-                            var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
-                        }
-
                         <img src="@imgUrl" class="card-img-top" alt="...">
                         <div class="card-header">
-                            @{
-                                var header = string.Empty;
-                                if (item is Movie movie)
-                                    header = movie.Title;
-                                if (item is TvShow tvShow)
-                                    header = tvShow.Title;
-                            }
                             @header
                         </div>
                         <div class="card-body">
-                            @{
-                                string resultat = string.Empty;
-                                if (item.Overview != null)
-                                {
-                                    if (item.Overview.Length > 100)
-                                    {
-                                        resultat = item.Overview.Substring(0, 100);
-                                        int dernierEspace = resultat.LastIndexOf(" ");
-                                        resultat = item.Overview.Substring(0, dernierEspace) + "...";
-                                    }
-                                    else
-                                    {
-                                        resultat = item.Overview;
-                                    }
-                                }
-                            }
+
                             <p class="card-text">@resultat</p>
                         </div>
                         <div class="card-footer">
-                            @{
-                                var pageUri = string.Empty;
-                                if (item is Movie)
-                                    pageUri = "films" ;
-                                if (item is TvShow)
-                                    pageUri = "series";
-                                var href = $"/{pageUri}/{item.Id}";
-                            }
                             <a class="btm btm-info" href="@href">plus info </a>
+                            @if (isFavori(item.Id ?? 0, cin).Result)
+                            {
+                                <button @onclick="@(() => RemoveFavori(item.Id??0, cin))">supprime de mes favorie</button>
+                            }
+                            else
+                            {
+                                <button @onclick="@(() => AddFavori(item.Id??0, cin))">ajoute a de mes favorie</button>
+                            }
                         </div>
                     </div>
                 </div>
@@ -66,7 +73,28 @@
     <GridPaging PaginationState="PagingState" />
 </div>
 @code {
+    [Inject]
+    public required MyFavoriService MyFavoriService { get; set; }
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
     [Parameter, EditorRequired] public required GridPagingState PagingState { get; set; }
     [Parameter, EditorRequired] public required string PageUri { get; set; }
+    [Parameter, EditorRequired] public required EventCallback OnStateHasChange { get; set; }
+
+    private async Task<bool> isFavori(int id, Cinematography cinematography)
+    {
+        var _ = await MyFavoriService.IsFavoriAsync(id, cinematography);       
+        return _;
+    }
+    private async void AddFavori(int id, Cinematography cinematography)
+    {
+        await MyFavoriService.AddFavoriAsync(id, cinematography);
+        //await OnStateHasChange.InvokeAsync();
+        StateHasChanged();
+    }
+    private async void RemoveFavori(int id, Cinematography cinematography)
+    {
+        await MyFavoriService.RemoveAsync(id, cinematography);
+        //await OnStateHasChange.InvokeAsync();
+        StateHasChanged();
+    }
 }

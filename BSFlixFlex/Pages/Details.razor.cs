@@ -25,13 +25,10 @@ namespace BSFlixFlex.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            //Item = await HttpClient.GetFromJsonAsync<T>($"3/{cinematography.ToString().ToLower()}/{Id}?language=fr-Fr");
             var resultDetail = await ApiTMBDService.GetDetail<T>(cinematography, Id);
             if (resultDetail.IsSuccess && resultDetail.Item != null)
                 Item = resultDetail.Item;
             
-            //var videoResponse = await HttpClient.GetFromJsonAsync<VideoResponse>($"3/{cinematography.ToString().ToLower()}/{Id}/videos?language=fr-Fr");
-            //videoResults = videoResponse.Results;
             var resultvideos = await ApiTMBDService.GetVideos<T>(cinematography, Id);
             if(resultvideos.IsSuccess && resultvideos.Results != null)
                 videoResults = resultvideos.Results!;
@@ -41,14 +38,14 @@ namespace BSFlixFlex.Pages
             await base.OnInitializedAsync();
         }
 
-        private void AddFavori()
+        private async void AddFavori()
         {
-            MyFavoriService.AddFavori(Id, cinematography);
+            await MyFavoriService.AddFavoriAsync(Id, cinematography);
             isFavori = true;
         }
-        private void RemoveFavori()
+        private async void RemoveFavori()
         {
-            MyFavoriService.Remove(Id, cinematography);
+            await MyFavoriService.RemoveAsync(Id, cinematography);
             isFavori = false;
         }
 

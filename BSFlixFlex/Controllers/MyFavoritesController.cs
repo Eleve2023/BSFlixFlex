@@ -40,7 +40,7 @@ namespace BSFlixFlex.Controllers
         public void Post(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true,out Cinematography result);
-             myFavoriService.AddFavori(id,result ,this.User);
+             myFavoriService.AddFavoriAsync(id,result ,this.User);
         }
 
         // PUT api/<ValuesController>/5
@@ -54,7 +54,7 @@ namespace BSFlixFlex.Controllers
         public void Delete(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true, out Cinematography result);
-            myFavoriService.Remove(id, result, this.User);
+            myFavoriService.RemoveAsync(id, result, this.User);
         }
     }
 }
