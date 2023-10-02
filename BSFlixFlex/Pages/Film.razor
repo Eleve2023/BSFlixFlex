@@ -31,7 +31,7 @@
                         Genres:
                         @if (Item.Genres != null && Item.Genres.Count > 0)
                         {
-                            @Item.Genres.Select(e => e.Name).Aggregate((i, j) => i + ", " + j)
+                            @Item.Genres.Select(e => e?.Name).Aggregate((i, j) => i + ", " + j)
                         }
                     </div>
                 </div>
@@ -52,13 +52,13 @@
                         <div class="grid row g-0">
                             <div class="col-md-2">
                                 @{
-                                    var imgPro = "https://image.tmdb.org/t/p/w500/"+item.LogoPath;
+                                    var imgPro = "https://image.tmdb.org/t/p/w500/"+item?.LogoPath;
                                 }
                                 <img src="@imgPro" class="img-fluid rounded-start" />
                             </div>
                             <div class="col-md-10 row">
-                                 Name : @item.Name
-                                 Origin Country :@item.OriginCountry
+                                 Name : @item?.Name?
+                                 Origin Country :@item?.OriginCountry
                             </div>
                         </div>
                     }
@@ -82,8 +82,6 @@
 {
     @foreach (var item in videoResults)
     {
-
-        var videourl = "https://www.youtube.com/embed/";
         <iframe width="560" height="315" src="https://www.youtube.com/embed/@item.VideoKey" frameborder="0" allowfullscreen></iframe>
     }
 }

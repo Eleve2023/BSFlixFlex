@@ -12,17 +12,17 @@ namespace BSFlixFlex.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = "CookiesOrBearer")]
-    public class MyFavoritesController(MyFavoriService myFavoriService) : ControllerBase
+    public class MyFavoritesController(MyFavoriteService myFavoriService) : ControllerBase
     {
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<ActionResult<ListResponse<IDiscovryCommonProperty>>> Get()
+        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get()
         {             
-            var r = await myFavoriService.GetMyListFavorisAsync(this.User);
+            var r = await myFavoriService.FetchUserFavoritesAsync(this.User);
             if (r != null)
             {
-                new ListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.Count(), Items = r };
+                new ApiListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.Count(), Items = r };
                 return Ok(r);
             }
             return NotFound();
@@ -37,10 +37,10 @@ namespace BSFlixFlex.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public void Post(int id, string cinematography)
+        public async void Post(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true,out Cinematography result);
-             myFavoriService.AddFavoriAsync(id,result ,this.User);
+            await myFavoriService.AddToFavoritesAsync(id,result ,this.User);
         }
 
         // PUT api/<ValuesController>/5
@@ -51,10 +51,10 @@ namespace BSFlixFlex.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id, string cinematography)
+        public async void Delete(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true, out Cinematography result);
-            myFavoriService.RemoveAsync(id, result, this.User);
+            await myFavoriService.RemoveFromFavoritesAsync(id, result, this.User);
         }
     }
 }

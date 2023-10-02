@@ -3,22 +3,55 @@ using System.IO;
 
 namespace BSFlixFlex.Services
 {
+    /// <summary>
+    /// Classe de service pour interagir avec l'API TMBD.
+    /// </summary>
     public class ApiTMBDService(HttpClient httpClient)
     {
-        public async Task<ListResponse<T>> GetTopRateAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
+        /// <summary>
+        /// Récupère la liste des films ou séries les mieux notés.
+        /// </summary>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
+        /// <param name="clientPageSize">Taille de page demandée par le client.</param>
+        /// <returns>Une liste des films ou séries les mieux notés.</returns>
+        public async Task<ApiListResponse<T>> FetchTopRatedItemsAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
         {
-            return await Get<T>("3", cinematography, clientPageNumber, clientPageSize,null,UrlType.TopRate);
+            return await FetchListResponseAsync<T>("3", cinematography, clientPageNumber, clientPageSize,null,UrlType.TopRate);
         }
 
-        public async Task<ListResponse<T>> GetDiscoverAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
+        /// <summary>
+        /// Récupère la liste des films ou séries.
+        /// </summary>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
+        /// <param name="clientPageSize">Taille de page demandée par le client.</param>
+        /// <returns>Une liste des films ou séries les mieux notés.</returns>
+        public async Task<ApiListResponse<T>> FetchDiscoveryItemsAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
         {
-            return await Get<T>("4/discover", cinematography, clientPageNumber, clientPageSize);
+            return await FetchListResponseAsync<T>("4/discover", cinematography, clientPageNumber, clientPageSize);
         }
-        public async Task<ListResponse<T>> GetSearchAsync<T>(Cinematography cinematography, string search, int clientPageNumber, int clientPageSize = 10) where T : class
+
+        /// <summary>
+        /// Récupère une liste de films ou séries correspondant à un terme de recherche.
+        /// </summary>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="search">Terme de recherche.</param>
+        /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
+        /// <param name="clientPageSize">Taille de page demandée par le client.</param>
+        /// <returns>Une liste de films ou séries correspondant au terme de recherche.</returns>
+        public async Task<ApiListResponse<T>> SearchItemsAsync<T>(Cinematography cinematography, string search, int clientPageNumber, int clientPageSize = 10) where T : class
         {
-            return await Get<T>("3/search", cinematography, clientPageNumber, clientPageSize, search);
+            return await FetchListResponseAsync<T>("3/search", cinematography, clientPageNumber, clientPageSize, search);
         }
-        public async Task<ItemResponse<T>> GetDetail<T>(Cinematography cinematography, int id) 
+
+        /// <summary>
+        /// Récupère les détails d'un film ou d'une série spécifique.
+        /// </summary>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="id">Identifiant du film ou de la série.</param>
+        /// <returns>Les détails du film ou de la série spécifié.</returns>
+        public async Task<ApiItemResponse<T>> FetchItemDetailsAsync<T>(Cinematography cinematography, int id) 
         {
             try
             {
@@ -32,9 +65,15 @@ namespace BSFlixFlex.Services
             {
                 return new() { IsSuccess = false, Message = "erreur" };
             }
-
         }
-        public async Task<VideoResponse> GetVideos<T>(Cinematography cinematography, int id)
+
+        /// <summary>
+        /// Récupère les vidéos associées à un film ou une série spécifique.
+        /// </summary>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="id">Identifiant du film ou de la série.</param>
+        /// <returns>Les vidéos associées au film ou à la série spécifié.</returns>
+        public async Task<VideoResponse> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
         {
             try
             {
@@ -51,10 +90,19 @@ namespace BSFlixFlex.Services
             {
                 return new() { IsSuccess = false, Message = "erreur" };
             }
-
         }
 
-        private async Task<ListResponse<T>> Get<T>(string path, Cinematography cinematography, int clientPageNumber, int clientPageSize, string? search = null, UrlType urlType = UrlType.Other) where T : class
+        /// <summary>
+        /// Récupère une liste de films ou séries en fonction du chemin spécifié.
+        /// </summary>
+        /// <param name="path">Chemin pour la requête API.</param>
+        /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
+        /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
+        /// <param name="clientPageSize">Taille de page demandée par le client.</param>
+        /// <param name="search">Terme de recherche optionnel.</param>
+        /// <param name="urlType">Type d'URL (TopRate ou autre).</param>
+        /// <returns>Une liste de films ou séries correspondant aux critères spécifiés.</returns>
+        private async Task<ApiListResponse<T>> FetchListResponseAsync<T>(string path, Cinematography cinematography, int clientPageNumber, int clientPageSize, string? search = null, UrlType urlType = UrlType.Other) where T : class
         {
             int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
             var uriRelatif = urlType switch
@@ -82,51 +130,27 @@ namespace BSFlixFlex.Services
                 return new() { IsSuccess = false, Message = "erreur" };
             }
         }
-        private static ListResponse<T> ResolvedList<T>(int clientPageNumber, int clientPageSize, DiscoverResponse<T> apiResults) where T : class
+
+        /// <summary>
+        /// Résout la liste des résultats de l'API en fonction de la pagination du client.
+        /// </summary>
+        /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
+        /// <param name="clientPageSize">Taille de page demandée par le client.</param>
+        /// <param name="apiResults">Résultats renvoyés par l'API.</param>
+        /// <returns>Une liste de films ou séries correspondant à la pagination du client.</returns>
+        private static ApiListResponse<T> ResolvedList<T>(int clientPageNumber, int clientPageSize, DiscoverResponse<T> apiResults) where T : class
         {
             int apiPageNumber = apiResults.Page;
             List<T> apiPageResults = apiResults.Results.ToList()!;
             int startIndex = (clientPageNumber - 1) * clientPageSize - (apiPageNumber - 1) * 20;
             int endIndex = startIndex + clientPageSize;
             List<T> clientPageResults = apiPageResults.GetRange(startIndex, endIndex - startIndex);
-            //var apiTotalPages = apiResults.TotalPages;
-            //int clientTotalPages = (int)Math.Ceiling((double)(apiTotalPages * 20) / clientPageSize);
-            return new ListResponse<T>
+            return new ApiListResponse<T>
             {
                 Items = clientPageResults,
                 TotalItems = apiResults.TotalResults,
                 IsSuccess = true,
             };
         }
-
-        //public async Task<ListResponse<T>> GetPaginatedResult(int clientPageSize, int clientPageNumber, List<T> apiResults, int apiTotalPages)
-        //{
-        //    // Calculer le nombre total de pages pour le client
-        //    int clientTotalPages = (int)Math.Ceiling((double)(apiTotalPages * 20) / clientPageSize);
-
-        //    // Calculer la page de l'API à partir de laquelle obtenir les résultats
-        //    int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
-
-        //    // Obtenir les résultats de l'API
-        //    // Note : Vous devrez remplacer cette partie par votre propre logique pour obtenir les résultats de l'API
-        //    List<T> apiPageResults = apiResults;
-
-        //    // Calculer l'index de début et de fin pour la sous-liste des résultats de l'API
-        //    int startIndex = (clientPageNumber - 1) * clientPageSize - (apiPageNumber - 1) * 20;
-        //    int endIndex = startIndex + clientPageSize;
-
-        //    // Obtenir la sous-liste des résultats de l'API
-        //    List<T> clientPageResults = apiPageResults.GetRange(startIndex, endIndex - startIndex);
-
-        //    // Créer le résultat paginé pour le client
-        //    var result = new ListResponse<T>
-        //    {
-        //        Items = clientPageResults,
-        //        TotalItems = clientTotalPages
-        //    };
-
-        //    return result;
-        //}
-
     }
 }

@@ -19,7 +19,7 @@ namespace BSFlixFlex.Models
         public string? ImdbId { get; set; }
 
         [JsonPropertyName("original_title")]
-        public string? OriginalTitle { get; set; }
+        public override string? OriginalTitle { get; set; }
 
         [JsonPropertyName("production_countries")]
         public List<ProductionCountry?> ProductionCountries { get; set; } = new();
@@ -37,7 +37,7 @@ namespace BSFlixFlex.Models
         public List<SpokenLanguage?> SpokenLanguages { get; set; } = new();
 
         [JsonPropertyName("title")]
-        public string? Title { get; set; }
+        public override string? Title { get; set; }
 
         [JsonPropertyName("video")]
         public bool? Video { get; set; }

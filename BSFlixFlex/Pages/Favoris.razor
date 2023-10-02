@@ -1,13 +1,13 @@
 ﻿@page "/favoris"
 @using BSFlixFlex.Pages.Pagination;
 @using BSFlixFlex.Services;
-@inject MyFavoriService MyService
+@inject MyFavoriteService MyService
 
 <h3>Favoris</h3>
 
 @if (myFavDisplay != null)
 {
-    <DiscoverCard Items="myFavDisplay" PageUri="" PagingState="pagingState" OnStateHasChange="StateHasChanged" />
+    <DiscoverCard Items="myFavDisplay" PageUri="" PagingState="pagingState" />
 
 }
 @code {
@@ -19,7 +19,7 @@
     protected override async Task OnInitializedAsync()
     {
         pagingState.PageChanged += PagingState_PageChanged;
-        myFavorites = (await MyService.GetMyListFavorisAsync());
+        myFavorites = (await MyService.FetchUserFavoritesAsync());
         if (myFavorites != null)
             queryMyFav = myFavorites.AsQueryable();
 

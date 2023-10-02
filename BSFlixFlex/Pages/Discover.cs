@@ -17,7 +17,7 @@ namespace BSFlixFlex.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            var listResponse = await ApiTMBDService.GetTopRateAsync<T>(cinematography, 1, 5);
+            var listResponse = await ApiTMBDService.FetchTopRatedItemsAsync<T>(cinematography, 1, 5);
             TopRated = listResponse.Items;
             await FillItemsAsync(cinematography, 1, pagingState.ItemsPerPage);            
 
@@ -34,11 +34,11 @@ namespace BSFlixFlex.Pages
 
         private async Task FillItemsAsync(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10)
         {
-            ListResponse<T> listResponse;
+            ApiListResponse<T> listResponse;
             if (string.IsNullOrEmpty(Search))
-                listResponse = await ApiTMBDService.GetDiscoverAsync<T>(cinematography, clientPageNumber, clientPageSize);
+                listResponse = await ApiTMBDService.FetchDiscoveryItemsAsync<T>(cinematography, clientPageNumber, clientPageSize);
             else
-                listResponse = await ApiTMBDService.GetSearchAsync<T>(cinematography, Search, clientPageNumber, clientPageSize);
+                listResponse = await ApiTMBDService.SearchItemsAsync<T>(cinematography, Search, clientPageNumber, clientPageSize);
 
             if (listResponse.TotalItems > 10000)
                 pagingState.TotalItems = 10000;

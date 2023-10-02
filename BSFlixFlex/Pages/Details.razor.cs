@@ -18,34 +18,34 @@ namespace BSFlixFlex.Pages
         }
 
         [Inject] public required HttpClient HttpClient { get; set; }
-        [Inject] public MyFavoriService MyFavoriService { get; set; }
+        [Inject] public MyFavoriteService MyFavoriService { get; set; }
         [Inject] public ApiTMBDService ApiTMBDService { get; set;}
         [SupplyParameterFromQuery][Parameter] public required int Id { get; set; }
         public required T Item { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            var resultDetail = await ApiTMBDService.GetDetail<T>(cinematography, Id);
+            var resultDetail = await ApiTMBDService.FetchItemDetailsAsync<T>(cinematography, Id);
             if (resultDetail.IsSuccess && resultDetail.Item != null)
                 Item = resultDetail.Item;
             
-            var resultvideos = await ApiTMBDService.GetVideos<T>(cinematography, Id);
+            var resultvideos = await ApiTMBDService.FetchItemVideosAsync<T>(cinematography, Id);
             if(resultvideos.IsSuccess && resultvideos.Results != null)
                 videoResults = resultvideos.Results!;
             
             if (Item != null && Item.Id is int id)
-                isFavori = await MyFavoriService.IsFavoriAsync(id, cinematography);
+                isFavori = await MyFavoriService.IsFavoriteAsync(id, cinematography);
             await base.OnInitializedAsync();
         }
 
         private async void AddFavori()
         {
-            await MyFavoriService.AddFavoriAsync(Id, cinematography);
+            await MyFavoriService.AddToFavoritesAsync(Id, cinematography);
             isFavori = true;
         }
         private async void RemoveFavori()
         {
-            await MyFavoriService.RemoveAsync(Id, cinematography);
+            await MyFavoriService.RemoveFromFavoritesAsync(Id, cinematography);
             isFavori = false;
         }
 

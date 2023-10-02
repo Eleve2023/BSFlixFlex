@@ -25,7 +25,7 @@
                     pageUri = "series";
                     cin = Cinematography.Tv;
                 }
-                string resultat = string.Empty;
+                string resultat = string.Empty;                
                 if (item.Overview != null)
                 {
                     if (item.Overview.Length > 100)
@@ -74,26 +74,26 @@
 </div>
 @code {
     [Inject]
-    public required MyFavoriService MyFavoriService { get; set; }
+    public required MyFavoriteService MyFavoriService { get; set; }
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
     [Parameter, EditorRequired] public required GridPagingState PagingState { get; set; }
     [Parameter, EditorRequired] public required string PageUri { get; set; }
-    [Parameter, EditorRequired] public required EventCallback OnStateHasChange { get; set; }
+    
 
     private async Task<bool> isFavori(int id, Cinematography cinematography)
     {
-        var _ = await MyFavoriService.IsFavoriAsync(id, cinematography);       
+        var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography);       
         return _;
     }
     private async void AddFavori(int id, Cinematography cinematography)
     {
-        await MyFavoriService.AddFavoriAsync(id, cinematography);
+        await MyFavoriService.AddToFavoritesAsync(id, cinematography);
         //await OnStateHasChange.InvokeAsync();
         StateHasChanged();
     }
     private async void RemoveFavori(int id, Cinematography cinematography)
     {
-        await MyFavoriService.RemoveAsync(id, cinematography);
+        await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography);
         //await OnStateHasChange.InvokeAsync();
         StateHasChanged();
     }
