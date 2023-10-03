@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Net.Http.Json;
+using BSFlixFlex.Exceptions;
 
 namespace BSFlixFlex.Services.Tests
 {
@@ -94,7 +95,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () =>
+            await Assert.ThrowsAsync<CinematographyMismatchException>(async () =>
             await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, clientPageNumber, clientPageSize));
         }
 
@@ -108,7 +109,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             // Act & Assert
-            await Assert.ThrowsAsync<NotSupportedException>(async () =>
+            await Assert.ThrowsAsync<NotSupportedTypeException>(async () =>
             await mockService.FetchTopRatedItemsAsync<MovieDetails>(cinematography, clientPageNumber, clientPageSize));
         }
 
@@ -248,7 +249,7 @@ namespace BSFlixFlex.Services.Tests
             var movieId = 114;
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => await mockService.FetchItemDetailsAsync<MovieDetails>(cinematography, movieId));
+            await Assert.ThrowsAsync<CinematographyMismatchException>(async () => await mockService.FetchItemDetailsAsync<MovieDetails>(cinematography, movieId));
         }
         [Fact()]
         public async void FetchItemDetailsAsyncTest_AvecMovie_Exption()
@@ -259,7 +260,7 @@ namespace BSFlixFlex.Services.Tests
             var movieId = 114;
 
             // Act & Assert
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await mockService.FetchItemDetailsAsync<Movie>(cinematography, movieId));
+            await Assert.ThrowsAsync<NotSupportedTypeException>(async () => await mockService.FetchItemDetailsAsync<Movie>(cinematography, movieId));
         }
 
         [Fact()]
