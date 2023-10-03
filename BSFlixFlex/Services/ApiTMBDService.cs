@@ -55,13 +55,14 @@ namespace BSFlixFlex.Services
         {
             try
             {
+                CheckTypeAndCinematographyOfDetail(typeof(T), cinematography);
                 var result = await httpClient.GetFromJsonAsync<T>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
                 if (result != null)
                     return new() { Item = result, IsSuccess = true };
                 else
                     return new() { IsSuccess = false, Message = "Not found" };
-            }
-            catch (Exception)
+            }            
+            catch (HttpRequestException)
             {
                 return new() { IsSuccess = false, Message = "erreur" };
             }
@@ -104,6 +105,7 @@ namespace BSFlixFlex.Services
         /// <returns>Une liste de films ou séries correspondant aux critères spécifiés.</returns>
         private async Task<ApiListResponse<T>> FetchListResponseAsync<T>(string path, Cinematography cinematography, int clientPageNumber, int clientPageSize, string? search = null, UrlType urlType = UrlType.Other) where T : class
         {
+            CheckTypeAndCinematographyOfDiscover(typeof(T), cinematography);
             int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
             var uriRelatif = urlType switch
             {
@@ -151,6 +153,29 @@ namespace BSFlixFlex.Services
                 TotalItems = apiResults.TotalResults,
                 IsSuccess = true,
             };
+        }
+
+        private void CheckTypeAndCinematographyOfDiscover(Type type, Cinematography cinematography)
+        {
+            var _cinematography = type switch
+            {
+                Type t when t == typeof(TvShow) => Cinematography.Tv,                
+                Type t when t == typeof(Movie) => Cinematography.Movie,                
+                _ => throw new NotSupportedException()
+            };
+            if (cinematography != _cinematography)
+                throw new Exception();
+        }
+        private void CheckTypeAndCinematographyOfDetail(Type type, Cinematography cinematography)
+        {
+            var _cinematography = type switch
+            {                
+                Type t when t == typeof(TvShowDetails) => Cinematography.Tv,                
+                Type t when t == typeof(MovieDetails) => Cinematography.Movie,
+                _ => throw new NotSupportedException()
+            };
+            if (cinematography != _cinematography)
+                throw new Exception();
         }
     }
 }

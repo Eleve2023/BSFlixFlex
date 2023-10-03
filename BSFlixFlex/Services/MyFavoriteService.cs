@@ -137,8 +137,8 @@ public class MyFavoriteService(
     {
         return cinematography switch
         {
-            Cinematography.Movie => await FetchDetailsAsync<Movie>(cinematography, id),
-            Cinematography.Tv => await FetchDetailsAsync<TvShow>(cinematography, id),
+            Cinematography.Movie => await FetchDetailsAsync<MovieDetails>(cinematography, id),
+            Cinematography.Tv => await FetchDetailsAsync<TvShowDetails>(cinematography, id),
             _ => null
         };
     }

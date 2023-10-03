@@ -13,7 +13,7 @@ namespace BSFlixFlex.Models
         public int Page { get; set; }
 
         [JsonPropertyName("results")]
-        public ICollection<T?> Results { get; set; } = new List<T?>();
+        public ICollection<T> Results { get; set; } = new List<T>();
 
         [JsonPropertyName("total_results")]
         public int TotalResults { get; set; }
