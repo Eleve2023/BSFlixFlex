@@ -18,7 +18,7 @@ namespace BSFlixFlex.Services
         /// <returns>Une liste des films ou séries les mieux notés.</returns>
         public async Task<ApiListResponse<T>> FetchTopRatedItemsAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
         {
-            return await FetchListResponseAsync<T>("3", cinematography, clientPageNumber, clientPageSize,null,UrlType.TopRate);
+            return await FetchListResponseAsync<T>("3", cinematography, clientPageNumber, clientPageSize, null, UrlType.TopRate);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace BSFlixFlex.Services
         /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
         /// <param name="id">Identifiant du film ou de la série.</param>
         /// <returns>Les détails du film ou de la série spécifié.</returns>
-        public async Task<ApiItemResponse<T>> FetchItemDetailsAsync<T>(Cinematography cinematography, int id) 
+        public async Task<ApiItemResponse<T>> FetchItemDetailsAsync<T>(Cinematography cinematography, int id)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace BSFlixFlex.Services
                     return new() { Item = result, IsSuccess = true };
                 else
                     return new() { IsSuccess = false, Message = "Not found" };
-            }            
+            }
             catch (HttpRequestException)
             {
                 throw;
@@ -107,31 +107,84 @@ namespace BSFlixFlex.Services
         private async Task<ApiListResponse<T>> FetchListResponseAsync<T>(string path, Cinematography cinematography, int clientPageNumber, int clientPageSize, string? search = null, UrlType urlType = UrlType.Other) where T : class
         {
             VerifyDiscoverItemTypeAndCinematography(typeof(T), cinematography);
+            if (20 < clientPageSize)
+                throw new PageSizeMismatchException();
             int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
-            var uriRelatif = urlType switch
-            {
-                UrlType.TopRate => $"{path}/{cinematography.ToString().ToLower()}/top_rated?page={apiPageNumber}&language=fr-Fr",
-                _ => $"{path}/{cinematography.ToString().ToLower()}?page={apiPageNumber}&language=fr-Fr"
-            };
-            
-            if (!string.IsNullOrEmpty(search))
-                uriRelatif += $"&query={search}";
 
+            Func<int, string> getRequestUri = (int apiPageNumber) =>
+            {
+                var uriRelatif = urlType switch
+                {
+                    UrlType.TopRate => $"{path}/{cinematography.ToString().ToLower()}/top_rated?page={apiPageNumber}&language=fr-Fr",
+                    _ => $"{path}/{cinematography.ToString().ToLower()}?page={apiPageNumber}&language=fr-Fr"
+                };
+
+                if (!string.IsNullOrEmpty(search))
+                    uriRelatif += $"&query={search}";
+
+                return uriRelatif;
+            };
+            return await ResolvedList<T>(clientPageNumber, clientPageSize, getRequestUri);
+        }
+
+        private async Task<DiscoverResponse<T>?> GetDiscoverResponseAsync<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        {
+            DiscoverResponse<T>? result = null;
             try
             {
-                var apiResults = await httpClient.GetFromJsonAsync<DiscoverResponse<T>>(uriRelatif);
-                if (apiResults != null)
+                result = await httpClient.GetFromJsonAsync<DiscoverResponse<T>>(getRequestUri(apiPageNumber));
+            }
+            catch (HttpRequestException m)
+            {
+                if (m.Message.Contains("422"))
                 {
-                    var listResponse = ResolvedList(clientPageNumber, clientPageSize, apiResults);
-                    listResponse.IsSuccess = true;
-                    return listResponse;
+                    result = await HandleApiPaginationErrors<T>(apiPageNumber, getRequestUri);
                 }
-                return new() { IsSuccess = false, Message = "null" };
+                else
+                    throw;
             }
             catch (Exception)
             {
                 throw;
             }
+            finally
+            {
+                // Gérer les limitations de l'API TMBD
+                if (result?.TotalPages > 500)
+                {
+                    result.TotalPages = 500;
+                    result.TotalResults = 10000;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Correction du numéro de page de l'API pour gérer les limites de pagination de l'API.
+        /// Par exemple, si l'API TMDB a un total de 500 pages et que la taille de page du client est 3,
+        /// alors une demande pour la page 3334 entraînerait un numéro de page API de 501.
+        /// Cependant, la page 501 n'existe pas car l'API a seulement 500 pages.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="apiPageNumber"></param>
+        /// <param name="getRequestUri">Fonction pour obtenir l'URI de requête.</param>
+        /// <returns></returns>
+        private async Task<DiscoverResponse<T>?> HandleApiPaginationErrors<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        {
+            var apiResultsTest = await GetDiscoverResponseAsync<T>(1, getRequestUri);
+            if (apiResultsTest != null)
+            {
+                if (apiPageNumber == apiResultsTest.TotalPages + 1)
+                {
+                    apiPageNumber--;
+                    return await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
+                }
+                else
+                {
+
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -139,19 +192,44 @@ namespace BSFlixFlex.Services
         /// </summary>
         /// <param name="clientPageNumber">Numéro de page demandé par le client.</param>
         /// <param name="clientPageSize">Taille de page demandée par le client.</param>
-        /// <param name="apiResults">Résultats renvoyés par l'API.</param>
+        /// <param name="getRequestUri">Fonction pour obtenir l'URI de requête.</param>
         /// <returns>Une liste de films ou séries correspondant à la pagination du client.</returns>
-        private static ApiListResponse<T> ResolvedList<T>(int clientPageNumber, int clientPageSize, DiscoverResponse<T> apiResults) where T : class
+        private async Task<ApiListResponse<T>> ResolvedList<T>(int clientPageNumber, int clientPageSize, Func<int, string> getRequestUri) where T : class
         {
-            int apiPageNumber = apiResults.Page;
+            // Calculer le numéro de page API
+            int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
+
+            //partie récupération des donnes dans Api TMBD 
+             var apiResults = await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
+            
+            //partie création de la liste clientPageResult
+            if (apiResults == null)
+                return new() { IsSuccess = false, Message = "null" };
+            apiPageNumber = apiResults.Page;
             List<T> apiPageResults = apiResults.Results.ToList()!;
             int startIndex = (clientPageNumber - 1) * clientPageSize - (apiPageNumber - 1) * 20;
             int endIndex = startIndex + clientPageSize;
-            List<T> clientPageResults = apiPageResults.GetRange(startIndex, endIndex - startIndex);
+            List<T> clientPageResults = [];
+            if (startIndex < 0)
+            {
+                clientPageResults = apiPageResults.GetRange(0,clientPageSize - Math.Abs( startIndex));
+                var apiPageResults2 = (await GetDiscoverResponseAsync<T>(apiPageNumber - 1, getRequestUri))!.Results.ToList();
+                apiPageResults2 = apiPageResults2.GetRange(apiPageResults2.Count - Math.Abs(startIndex), Math.Abs(startIndex));
+                apiPageResults2.AddRange(clientPageResults);
+                clientPageResults = apiPageResults2;
+            }
+            else if (apiPageNumber + 1 > apiResults.TotalPages)
+            {
+                clientPageResults = apiPageResults.GetRange(startIndex, apiPageResults.Count - startIndex);
+            }
+            else
+            {
+                clientPageResults = apiPageResults.GetRange(startIndex, apiPageResults.Count - startIndex);
+            }
             return new ApiListResponse<T>
             {
                 Items = clientPageResults,
-                TotalItems = apiResults.TotalResults,
+                TotalItems = apiResults.TotalPages,
                 IsSuccess = true,
             };
         }
@@ -167,8 +245,8 @@ namespace BSFlixFlex.Services
         {
             var _cinematography = type switch
             {
-                Type t when t == typeof(TvShow) => Cinematography.Tv,                
-                Type t when t == typeof(Movie) => Cinematography.Movie,                
+                Type t when t == typeof(TvShow) => Cinematography.Tv,
+                Type t when t == typeof(Movie) => Cinematography.Movie,
                 _ => throw new NotSupportedTypeException()
             };
             if (cinematography != _cinematography)
@@ -185,8 +263,8 @@ namespace BSFlixFlex.Services
         private static void VerifyDetailItemTypeAndCinematography(Type type, Cinematography cinematography)
         {
             var _cinematography = type switch
-            {                
-                Type t when t == typeof(TvShowDetails) => Cinematography.Tv,                
+            {
+                Type t when t == typeof(TvShowDetails) => Cinematography.Tv,
                 Type t when t == typeof(MovieDetails) => Cinematography.Movie,
                 _ => throw new NotSupportedTypeException()
             };

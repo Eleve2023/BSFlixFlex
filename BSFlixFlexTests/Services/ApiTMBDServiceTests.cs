@@ -114,6 +114,61 @@ namespace BSFlixFlex.Services.Tests
         }
 
         [Fact()]
+        public async void FetchTopRatedItemsAsyncTest_Exption_SiPageSeizeSuperieurApi()
+        {
+            // Arrange
+            var mockService = new ApiTMBDService(_httpClient);
+            var cinematography = Cinematography.Movie;
+            var clientPageNumber = 1;
+            var clientPageSize = 21;
+
+            // Act & Assert
+            await Assert.ThrowsAsync<PageSizeMismatchException>(async () =>
+            await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, clientPageNumber, clientPageSize));
+        }
+
+        [Fact()]
+        public async void FetchTopRatedItemsAsyncTest_Page_Seiz3()
+        {
+            // Arrange
+            var mockService = new ApiTMBDService(_httpClient);
+            var cinematography = Cinematography.Movie;
+            var clientPageNumber = 1;
+            var clientPageSize = 3;
+
+            var path1 = "3/movie/top_rated?page=1&language=fr-Fr";
+            var path2 = "3/movie/top_rated?page=2&language=fr-Fr";
+            var path3 = "3/movie/top_rated?page=500&language=fr-Fr";
+            var apiResults1 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path1);
+            var apiResults2 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path2);
+            var apiResults3 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path3);
+
+            var expected1 = ParcialArrangeOfDisciverResponse(apiResults1);
+            var expected2 = ParcialArrangeOfDisciverResponse(apiResults2);
+            var expected3 = ParcialArrangeOfDisciverResponse(apiResults3);
+
+            // Act
+            var result1 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 1, clientPageSize);
+            //var result2 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 2, clientPageSize);
+            //var result3 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 3, clientPageSize);
+            //var result4 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 4, clientPageSize);
+            //var result5 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 5, clientPageSize);
+            var result6 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 6, clientPageSize);
+            var result7 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 7, clientPageSize);
+            var result8 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 3334, clientPageSize);
+
+            // Assert
+            
+            Assert.Equal(expected1.Items[0].Id, result1.Items[0].Id);
+            Assert.Equal(expected1.Items[15].Id, result6.Items[0].Id);
+            Assert.Equal(expected1.Items[18].Id, result7.Items[0].Id);
+            Assert.Equal(expected2.Items[0].Id, result7.Items[^1].Id);
+
+            Assert.Equal(expected3.Items[^1].Id, result8.Items[^1].Id);
+            Assert.Single(result8.Items);
+        }
+
+            [Fact()]
         public async void FetchDiscoveryItemsAsyncTest_AvecMovie()
         {
             // Arrange
