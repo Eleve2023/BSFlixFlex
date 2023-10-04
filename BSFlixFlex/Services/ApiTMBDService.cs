@@ -180,7 +180,7 @@ namespace BSFlixFlex.Services
             return new ApiListResponse<T>
             {
                 Items = clientPageResults,
-                TotalItems = apiResults.TotalPages,
+                TotalItems = apiResults.TotalResults,
                 IsSuccess = true,
             };
         }

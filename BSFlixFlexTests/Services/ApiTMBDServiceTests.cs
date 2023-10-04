@@ -158,7 +158,7 @@ namespace BSFlixFlex.Services.Tests
             var result8 = await mockService.FetchTopRatedItemsAsync<Movie>(cinematography, 3334, clientPageSize);
 
             // Assert
-            
+
             Assert.Equal(expected1.Items[0].Id, result1.Items[0].Id);
             Assert.Equal(expected1.Items[15].Id, result6.Items[0].Id);
             Assert.Equal(expected1.Items[17].Id, result6.Items[^1].Id);
@@ -169,7 +169,7 @@ namespace BSFlixFlex.Services.Tests
             Assert.Single(result8.Items);
         }
 
-            [Fact()]
+        [Fact()]
         public async void FetchDiscoveryItemsAsyncTest_AvecMovie()
         {
             // Arrange
@@ -189,6 +189,27 @@ namespace BSFlixFlex.Services.Tests
             ParcialAssertOfDiscoverResponse(clientPageSize, expected, result);
         }
 
+        [Fact()]
+        public async void FetchDiscoveryItemsAsyncTest_TotalItemsLimiteApiTMBD()
+        {
+            // Arrange
+            var mockService = new ApiTMBDService(_httpClient);
+            var cinematography = Cinematography.Movie;
+            var clientPageNumber = 1;
+            var clientPageSize = 10;
+
+            var path = "4/discover/movie?page=1&language=fr-Fr";
+            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path);
+            var expected = ParcialArrangeOfDisciverResponse(apiResults);
+
+            // Act
+            var result = await mockService.FetchDiscoveryItemsAsync<Movie>(cinematography, clientPageNumber, clientPageSize);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.True(10000 == result.TotalItems);
+            Assert.True(result.Items.Count == 10);
+        }
         [Fact()]
         public async void FetchDiscoveryItemsAsyncTest_AvecTv()
         {

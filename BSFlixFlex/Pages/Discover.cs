@@ -9,7 +9,7 @@ namespace BSFlixFlex.Pages
     {
         private readonly Cinematography cinematography = cinematography;
         protected GridPagingState pagingState = new(10);
-       
+
         [Inject] public required ApiTMBDService ApiTMBDService { get; set; }
         public List<T>? TopRated { get; set; }
         public List<T>? Items { get; set; }
@@ -19,15 +19,15 @@ namespace BSFlixFlex.Pages
         {
             var listResponse = await ApiTMBDService.FetchTopRatedItemsAsync<T>(cinematography, 1, 5);
             TopRated = listResponse.Items;
-            await FillItemsAsync(cinematography, 1, pagingState.ItemsPerPage);            
+            await FillItemsAsync(cinematography, 1, pagingState.ItemsPerPage);
 
             pagingState.PageChanged += PagingState_PageChanged;
-            
+
             await base.OnInitializedAsync();
         }
         private async void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
         {
-            await FillItemsAsync(cinematography,pagingState.CurrentPage, e.ItemsPerPage);
+            await FillItemsAsync(cinematography, pagingState.CurrentPage, e.ItemsPerPage);
 
             StateHasChanged();
         }
@@ -40,16 +40,13 @@ namespace BSFlixFlex.Pages
             else
                 listResponse = await ApiTMBDService.SearchItemsAsync<T>(cinematography, Search, clientPageNumber, clientPageSize);
 
-            if (listResponse.TotalItems > 10000)
-                pagingState.TotalItems = 10000;
-            else
-                pagingState.TotalItems = listResponse.TotalItems;
+            pagingState.TotalItems = listResponse.TotalItems;
             Items = listResponse.Items;
         }
 
         protected void OnSearch()
         {
-            Items = null;            
+            Items = null;
             pagingState.CurrentPage = 1;
         }
     }
