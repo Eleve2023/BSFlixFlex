@@ -86,7 +86,7 @@ namespace BSFlixFlex.Services.Tests
         }
 
         [Fact()]
-        public async void FetchTopRatedItemsAsyncTest_AvecMovieEtCinematographyTv_Exption()
+        public async void FetchTopRatedItemsAsyncTest_Exception_AvecMovieEtCinematographyTv()
         {
             // Arrange
             var mockService = new ApiTMBDService(_httpClient);
@@ -100,7 +100,7 @@ namespace BSFlixFlex.Services.Tests
         }
 
         [Fact()]
-        public async void FetchTopRatedItemsAsyncTest_AvecMovieDetail_Exption()
+        public async void FetchTopRatedItemsAsyncTest_Exception_AvecMovieDetail()
         {
             // Arrange
             var mockService = new ApiTMBDService(_httpClient);
@@ -114,7 +114,7 @@ namespace BSFlixFlex.Services.Tests
         }
 
         [Fact()]
-        public async void FetchTopRatedItemsAsyncTest_Exption_SiPageSeizeSuperieurApi()
+        public async void FetchTopRatedItemsAsyncTest_Exception_SiPageSeizeSuperieurApi()
         {
             // Arrange
             var mockService = new ApiTMBDService(_httpClient);
@@ -133,7 +133,7 @@ namespace BSFlixFlex.Services.Tests
             // Arrange
             var mockService = new ApiTMBDService(_httpClient);
             var cinematography = Cinematography.Movie;
-            var clientPageNumber = 1;
+            //var clientPageNumber = 1;
             var clientPageSize = 3;
 
             var path1 = "3/movie/top_rated?page=1&language=fr-Fr";
@@ -161,6 +161,7 @@ namespace BSFlixFlex.Services.Tests
             
             Assert.Equal(expected1.Items[0].Id, result1.Items[0].Id);
             Assert.Equal(expected1.Items[15].Id, result6.Items[0].Id);
+            Assert.Equal(expected1.Items[17].Id, result6.Items[^1].Id);
             Assert.Equal(expected1.Items[18].Id, result7.Items[0].Id);
             Assert.Equal(expected2.Items[0].Id, result7.Items[^1].Id);
 
@@ -307,7 +308,7 @@ namespace BSFlixFlex.Services.Tests
             await Assert.ThrowsAsync<CinematographyMismatchException>(async () => await mockService.FetchItemDetailsAsync<MovieDetails>(cinematography, movieId));
         }
         [Fact()]
-        public async void FetchItemDetailsAsyncTest_AvecMovie_Exption()
+        public async void FetchItemDetailsAsyncTest_Exception_AvecMovie()
         {
             // Arrange
             var mockService = new ApiTMBDService(_httpClient);

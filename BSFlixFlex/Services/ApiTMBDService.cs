@@ -1,6 +1,8 @@
 ﻿using BSFlixFlex.Exceptions;
+using BSFlixFlex.Exceptions.ApiTMBD;
 using BSFlixFlex.Models;
 using System.IO;
+using System.Linq;
 
 namespace BSFlixFlex.Services
 {
@@ -57,15 +59,19 @@ namespace BSFlixFlex.Services
             try
             {
                 VerifyDetailItemTypeAndCinematography(typeof(T), cinematography);
-                var result = await httpClient.GetFromJsonAsync<T>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr");
-                if (result != null)
-                    return new() { Item = result, IsSuccess = true };
-                else
-                    return new() { IsSuccess = false, Message = "Not found" };
+                var result = (await httpClient.GetFromJsonAsync<T>($"3/{cinematography.ToString().ToLower()}/{id}?language=fr-Fr"))
+                    ?? throw new NullResultsApiTMBDException();
+
+                return new() { Item = result, IsSuccess = true };
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException e)
             {
-                throw;
+                //todo: ajouter le gestion d'erreur
+                throw new HttpRequestApiTMBDException(e.Message);
+            }
+            catch (ApiTMBDException m)
+            {
+                return new() { IsSuccess = false, Message = m.Message };
             }
         }
 
@@ -79,18 +85,20 @@ namespace BSFlixFlex.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<VideoResponse>($"3/{cinematography.ToString().ToLower()}/{id}/videos?language=fr-Fr");
-                if (result != null)
-                {
-                    result.IsSuccess = true;
-                    return result;
-                }
-                else
-                    return new() { IsSuccess = false, Message = "Null" };
+                var result = (await httpClient.GetFromJsonAsync<VideoResponse>($"3/{cinematography.ToString().ToLower()}/{id}/videos?language=fr-Fr"))
+                    ?? throw new NullResultsApiTMBDException();
+
+                result.IsSuccess = true;
+                return result;
             }
-            catch (Exception)
+            catch (HttpRequestException e)
             {
-                throw;
+                //todo: ajouter le gestion d'erreur
+                throw new HttpRequestApiTMBDException(e.Message);
+            }
+            catch (Exception m)
+            {
+                return new() { IsSuccess = false, Message = m.Message };
             }
         }
 
@@ -109,7 +117,6 @@ namespace BSFlixFlex.Services
             VerifyDiscoverItemTypeAndCinematography(typeof(T), cinematography);
             if (20 < clientPageSize)
                 throw new PageSizeMismatchException();
-            int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
 
             Func<int, string> getRequestUri = (int apiPageNumber) =>
             {
@@ -124,67 +131,14 @@ namespace BSFlixFlex.Services
 
                 return uriRelatif;
             };
-            return await ResolvedList<T>(clientPageNumber, clientPageSize, getRequestUri);
-        }
-
-        private async Task<DiscoverResponse<T>?> GetDiscoverResponseAsync<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
-        {
-            DiscoverResponse<T>? result = null;
             try
             {
-                result = await httpClient.GetFromJsonAsync<DiscoverResponse<T>>(getRequestUri(apiPageNumber));
+                return await ResolvedList<T>(clientPageNumber, clientPageSize, getRequestUri);
             }
-            catch (HttpRequestException m)
+            catch (Exception m)
             {
-                if (m.Message.Contains("422"))
-                {
-                    result = await HandleApiPaginationErrors<T>(apiPageNumber, getRequestUri);
-                }
-                else
-                    throw;
+                return new() { IsSuccess = false, Message = m.Message };
             }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                // Gérer les limitations de l'API TMBD
-                if (result?.TotalPages > 500)
-                {
-                    result.TotalPages = 500;
-                    result.TotalResults = 10000;
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Correction du numéro de page de l'API pour gérer les limites de pagination de l'API.
-        /// Par exemple, si l'API TMDB a un total de 500 pages et que la taille de page du client est 3,
-        /// alors une demande pour la page 3334 entraînerait un numéro de page API de 501.
-        /// Cependant, la page 501 n'existe pas car l'API a seulement 500 pages.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="apiPageNumber"></param>
-        /// <param name="getRequestUri">Fonction pour obtenir l'URI de requête.</param>
-        /// <returns></returns>
-        private async Task<DiscoverResponse<T>?> HandleApiPaginationErrors<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
-        {
-            var apiResultsTest = await GetDiscoverResponseAsync<T>(1, getRequestUri);
-            if (apiResultsTest != null)
-            {
-                if (apiPageNumber == apiResultsTest.TotalPages + 1)
-                {
-                    apiPageNumber--;
-                    return await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
-                }
-                else
-                {
-
-                }
-            }
-            return null;
         }
 
         /// <summary>
@@ -199,32 +153,29 @@ namespace BSFlixFlex.Services
             // Calculer le numéro de page API
             int apiPageNumber = (int)Math.Ceiling((double)(clientPageNumber * clientPageSize) / 20);
 
-            //partie récupération des donnes dans Api TMBD 
-             var apiResults = await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
-            
-            //partie création de la liste clientPageResult
-            if (apiResults == null)
-                return new() { IsSuccess = false, Message = "null" };
+            //partie récupération des donnes dans Api TMBD            
+            var apiResults = await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
+
+            //partie création de la liste clientPageResult            
             apiPageNumber = apiResults.Page;
             List<T> apiPageResults = apiResults.Results.ToList()!;
-            int startIndex = (clientPageNumber - 1) * clientPageSize - (apiPageNumber - 1) * 20;
-            int endIndex = startIndex + clientPageSize;
+
             List<T> clientPageResults = [];
-            if (startIndex < 0)
+
+            int startIndex = (clientPageNumber - 1) * clientPageSize - (apiPageNumber - 1) * 20;
+            if (startIndex < 0)// si les donne sont fragmente dans page actuel et page précédant du ApiTMBD
             {
-                clientPageResults = apiPageResults.GetRange(0,clientPageSize - Math.Abs( startIndex));
-                var apiPageResults2 = (await GetDiscoverResponseAsync<T>(apiPageNumber - 1, getRequestUri))!.Results.ToList();
-                apiPageResults2 = apiPageResults2.GetRange(apiPageResults2.Count - Math.Abs(startIndex), Math.Abs(startIndex));
-                apiPageResults2.AddRange(clientPageResults);
-                clientPageResults = apiPageResults2;
+                var apiPageResultsPrev = (await GetDiscoverResponseAsync<T>(apiPageNumber - 1, getRequestUri)).Results.ToList();
+                clientPageResults = apiPageResultsPrev.GetRange(apiPageResultsPrev.Count - Math.Abs(startIndex), Math.Abs(startIndex));
+                clientPageResults.AddRange(apiPageResults.GetRange(0, clientPageSize - Math.Abs(startIndex)));
             }
-            else if (apiPageNumber + 1 > apiResults.TotalPages)
+            else if (apiPageNumber + 1 > apiResults.TotalPages)// cas des limitation pagination de l'Api
             {
                 clientPageResults = apiPageResults.GetRange(startIndex, apiPageResults.Count - startIndex);
             }
             else
             {
-                clientPageResults = apiPageResults.GetRange(startIndex, apiPageResults.Count - startIndex);
+                clientPageResults = apiPageResults.GetRange(startIndex, Math.Min(apiPageResults.Count - startIndex, clientPageSize));
             }
             return new ApiListResponse<T>
             {
@@ -233,6 +184,65 @@ namespace BSFlixFlex.Services
                 IsSuccess = true,
             };
         }
+
+        private async Task<DiscoverResponse<T>> GetDiscoverResponseAsync<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        {
+            DiscoverResponse<T> result = null!;
+            try
+            {
+                result = (await httpClient.GetFromJsonAsync<DiscoverResponse<T>>(getRequestUri(apiPageNumber)))
+                    ?? throw new NullResultsApiTMBDException();
+            }
+            catch (HttpRequestException m)
+            {
+                if (m.Message.Contains("422"))
+                {
+                    result = await HandleApiPaginationErrors<T>(apiPageNumber, getRequestUri);
+                }
+                else
+                    throw new HttpRequestApiTMBDException("", m.HttpRequestError);
+            }
+            catch (Exception)
+            {
+                //todo:: Ajout un log et gere cette exception
+                throw;
+            }
+
+            // Gérer les limitations de l'API TMBD
+            if (result.TotalPages > 500)
+            {
+                result.TotalPages = 500;
+                result.TotalResults = 10000;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Correction du numéro de page de l'API pour gérer les limites de pagination de l'API.
+        /// Par exemple, si l'API TMDB a un total de 500 pages et que la taille de page du client est 3,
+        /// alors une demande pour la page 3334 entraînerait un numéro de page API de 501.
+        /// Cependant, la page 501 n'existe pas car l'API a seulement 500 pages.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="apiPageNumber"></param>
+        /// <param name="getRequestUri">Fonction pour obtenir l'URI de requête.</param>
+        /// <returns></returns>
+        private async Task<DiscoverResponse<T>> HandleApiPaginationErrors<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        {
+            var apiResultsTest = await GetDiscoverResponseAsync<T>(1, getRequestUri);
+
+            if (apiPageNumber == apiResultsTest.TotalPages + 1)
+            {
+                apiPageNumber--;
+                return await GetDiscoverResponseAsync<T>(apiPageNumber, getRequestUri);
+            }
+            else
+            {
+                throw new PageNotFoundApiTMBDException();
+            }
+        }
+
 
         /// <summary>
         /// Vérifie si le type et la cinématographie de l'objet correspondent pour la découverte.
