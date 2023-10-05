@@ -1,8 +1,10 @@
 ﻿@using BSFlixFlex.Models;
 @using BSFlixFlex.Pages.Pagination;
 @using BSFlixFlex.Services;
+@using System.Security.Claims;
 @typeparam T where T : class, IDiscovryCommonProperty
-
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavManager
 <div class="g-col-12">
     <div class="grid row row-cols g-2">
         @if (Items != null)
@@ -25,7 +27,7 @@
                     pageUri = "series";
                     cin = Cinematography.Tv;
                 }
-                string resultat = string.Empty;                
+                string resultat = string.Empty;
                 if (item.Overview != null)
                 {
                     if (item.Overview.Length > 100)
@@ -78,23 +80,59 @@
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
     [Parameter, EditorRequired] public required GridPagingState PagingState { get; set; }
     [Parameter, EditorRequired] public required string PageUri { get; set; }
-    
+    public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
+    public bool IsAuthenticated => GetIsAuthenticated();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal = authenticationState.User;
+        await base.OnInitializedAsync();
+    }
+
+    private bool GetIsAuthenticated()
+    {
+        if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
+            return true;
+        return false;
+    }
 
     private async Task<bool> isFavori(int id, Cinematography cinematography)
     {
-        var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography);       
+        var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography);
         return _;
     }
     private async void AddFavori(int id, Cinematography cinematography)
     {
-        await MyFavoriService.AddToFavoritesAsync(id, cinematography);
-        //await OnStateHasChange.InvokeAsync();
-        StateHasChanged();
+        if (IsAuthenticated)
+        {
+            await MyFavoriService.AddToFavoritesAsync(id, cinematography);
+            //await OnStateHasChange.InvokeAsync();
+            StateHasChanged();
+        }
+        else
+        {
+            GoLogin();
+
+        }
     }
     private async void RemoveFavori(int id, Cinematography cinematography)
     {
-        await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography);
-        //await OnStateHasChange.InvokeAsync();
-        StateHasChanged();
+        if (IsAuthenticated)
+        {
+            await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography);
+            //await OnStateHasChange.InvokeAsync();
+            StateHasChanged();
+        }
+        else
+        {
+            GoLogin();
+        }
+    }
+    private void GoLogin()
+    {
+        var returnUrl = Uri.EscapeDataString(NavManager.Uri);
+        returnUrl = $"~/{PageUri}";
+        NavManager.NavigateTo($"/Identity/Account/Login?returnUrl={returnUrl}", true);
     }
 }
