@@ -11,22 +11,21 @@ namespace BSFlixFlex.Services;
 /// </summary>
 public class MyFavoriteService(
     AppDbContext appDbContext,
-    ApiTMBDService apiTMBDService,
-    AuthenticationStateProvider authenticationStateProvider,
-    UserManager<IdentityUser> userManager)
+    ApiTMBDService apiTMBDService
+   )
 {
     /// <summary>
     /// Récupère la liste des favoris de l'utilisateur.
     /// </summary>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     /// <returns>Une liste des favoris de l'utilisateur, ou null si l'utilisateur n'est pas authentifié.</returns>
-    public async Task<List<IDiscovryCommonProperty>?> FetchUserFavoritesAsync(ClaimsPrincipal? claimsPrincipal = null)
+    public async Task<List<IDiscovryCommonProperty>?> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal)
     {
         List<IDiscovryCommonProperty> myFavoris = [];
 
-        if (await FetchIdentityUserAsync(claimsPrincipal) is IdentityUser user)
+        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
         {
-            var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(user.Id)).ToArray();
+            var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).ToArray();
             if (_myFav.Length > 0)
             {
                 foreach (var fav in _myFav)
@@ -50,17 +49,19 @@ public class MyFavoriteService(
     /// <param name="cinematography">Le type de cinématographie (Film ou Série).</param>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     /// <returns>True si le film ou la série est dans les favoris de l'utilisateur, false sinon.</returns>
-    public async Task<bool> IsFavoriteAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
+    public async Task<bool> IsFavoriteAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (await FetchIdentityUserAsync(claimsPrincipal) is IdentityUser user)
+        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
         {
-            var myFavorite = await BuildFavoriteQuery(id,cinematography,user).FirstOrDefaultAsync();
+            var myFavorite = await BuildFavoriteQuery(id, cinematography, userIdentifier).FirstOrDefaultAsync();
             if (myFavorite != null)
             {
                 return true;
             }
+            else { return false; }
         }
-        return false;
+       
+            throw new Exception();
     }
 
     /// <summary>
@@ -69,18 +70,18 @@ public class MyFavoriteService(
     /// <param name="id">L'ID du film ou de la série.</param>
     /// <param name="cinematography">Le type de cinématographie (Film ou Série).</param>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
-    public async Task AddToFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
+    public async Task AddToFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (await FetchIdentityUserAsync(claimsPrincipal) is IdentityUser user)
+        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
         {
             var itemResponse = await FetchItemResponseAsync(cinematography, id);
             if (itemResponse is { IsSuccess: true, Item: var item } && item is not null)
             {
-                var myFavorite = await BuildFavoriteQuery(id, cinematography, user).FirstOrDefaultAsync();
+                var myFavorite = await BuildFavoriteQuery(id, cinematography, userIdentifier).FirstOrDefaultAsync();
                 if (myFavorite is null)
                 {
                     await appDbContext.Set<MyFavorite>()
-                        .AddAsync(new() { Cinematography = cinematography, UserId = new Guid(user.Id), IdCinematography = id });
+                        .AddAsync(new() { Cinematography = cinematography, UserId = new Guid(userIdentifier), IdCinematography = id });
                     await appDbContext.SaveChangesAsync();
                 }
             }
@@ -93,39 +94,22 @@ public class MyFavoriteService(
     /// <param name="id">L'ID du film ou de la série.</param>
     /// <param name="cinematography">Le type de cinématographie (Film ou Série).</param>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
-    public async Task RemoveFromFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal? claimsPrincipal = null)
+    public async Task RemoveFromFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (await FetchIdentityUserAsync(claimsPrincipal) is IdentityUser user)
+        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
         {
-            var myFavorite = BuildFavoriteQuery(id, cinematography, user);
+            var myFavorite = BuildFavoriteQuery(id, cinematography, userIdentifier);
             appDbContext.RemoveRange(myFavorite);
             await appDbContext.SaveChangesAsync();
         }
     }
 
-    /// <summary>
-    /// Récupère l'IdentityUser correspondant au ClaimsPrincipal fourni.
-    /// </summary>
-    /// <param name="claimsPrincipal">Le ClaimsPrincipal à vérifier. Si null, utilise le ClaimsPrincipal du composant Razor actuel.</param>
-    /// <returns>L'IdentityUser correspondant, ou null si le ClaimsPrincipal n'est pas authentifié.</returns>
-    private async Task<IdentityUser?> FetchIdentityUserAsync(ClaimsPrincipal? claimsPrincipal)
-    {
-        ClaimsPrincipal claims;
 
-        if (claimsPrincipal is null)
-        {
-            // si la demande est fait par razor component
-            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-            claims = authState.User;
-        }
-        else
-            claims = claimsPrincipal;
-        if (claims?.Identity is { IsAuthenticated: true, Name: var name } && name != null)
-        {
-            return await userManager.FindByNameAsync(name);
-        }
-        return null;
+    private static string? UserIdentifier(ClaimsPrincipal claimsPrincipal)
+    {
+        return claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
     }
+        
 
     /// <summary>
     /// Récupère la réponse de l'élément en fonction du type de cinématographie et de l'ID.
@@ -162,9 +146,9 @@ public class MyFavoriteService(
     /// <param name="cinematography">Le type de cinématographie (Film ou Série).</param>
     /// <param name="user">L'utilisateur pour lequel récupérer les favoris.</param>
     /// <returns>Une requête pour les favoris de l'utilisateur spécifié.</returns>
-    private IQueryable<MyFavorite> BuildFavoriteQuery(int id, Cinematography cinematography, IdentityUser user)
+    private IQueryable<MyFavorite> BuildFavoriteQuery(int id, Cinematography cinematography, string userIdentifier)
     {
         return appDbContext.Set<MyFavorite>()
-            .Where(x => x.IdCinematography == id && x.Cinematography == cinematography && x.UserId == new Guid(user.Id));
+            .Where(x => x.IdCinematography == id && x.Cinematography == cinematography && x.UserId == new Guid(userIdentifier));
     }
 }

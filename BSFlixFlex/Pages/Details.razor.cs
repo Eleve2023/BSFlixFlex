@@ -17,9 +17,9 @@ namespace BSFlixFlex.Pages
             btmFavori = BtmFavoriRender;
         }
 
-        [Inject] public required HttpClient HttpClient { get; set; }
-        [Inject] public MyFavoriteService MyFavoriService { get; set; }
-        [Inject] public ApiTMBDService ApiTMBDService { get; set;}
+        //[Inject] public required HttpClient HttpClient { get; set; }
+        //[Inject] public required MyFavoriteService MyFavoriService { get; set; }
+        [Inject] public required ApiTMBDService ApiTMBDService { get; set;}
         [SupplyParameterFromQuery][Parameter] public required int Id { get; set; }
         public required T Item { get; set; }
 
@@ -32,22 +32,7 @@ namespace BSFlixFlex.Pages
             var resultvideos = await ApiTMBDService.FetchItemVideosAsync<T>(cinematography, Id);
             if(resultvideos.IsSuccess && resultvideos.Results != null)
                 videoResults = resultvideos.Results!;
-            
-            if (Item != null && Item.Id is int id)
-                isFavori = await MyFavoriService.IsFavoriteAsync(id, cinematography);
             await base.OnInitializedAsync();
         }
-
-        private async void AddFavori()
-        {
-            await MyFavoriService.AddToFavoritesAsync(Id, cinematography);
-            isFavori = true;
-        }
-        private async void RemoveFavori()
-        {
-            await MyFavoriService.RemoveFromFavoritesAsync(Id, cinematography);
-            isFavori = false;
-        }
-
     }
 }

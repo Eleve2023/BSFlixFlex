@@ -5,14 +5,10 @@
 @code {
     private void BtmFavoriRender(RenderTreeBuilder __builder)
     {
-        if(isFavori)
+        if (Item !=null)
         {
-            <button @onclick="RemoveFavori">supprime de mes favorie</button>
-        }
-        else
-        {
-            <button @onclick="AddFavori">ajoute a de mes favorie</button>            
-        }
+            <BtmFav Item="Item"></BtmFav>
+        }       
 
     }
 }

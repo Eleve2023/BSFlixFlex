@@ -1,8 +1,10 @@
 ﻿@page "/favoris"
 @using BSFlixFlex.Pages.Pagination;
 @using BSFlixFlex.Services;
+@using System.Security.Claims;
 @attribute [Authorize]
 @inject MyFavoriteService MyService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <h3>Favoris</h3>
 
@@ -17,10 +19,22 @@
     private IQueryable<IDiscovryCommonProperty> queryMyFav= default!;
     private GridPagingState pagingState = new(10);
 
+    public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
+    public bool IsAuthenticated => GetIsAuthenticated();
+
+    private bool GetIsAuthenticated()
+    {
+        if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
+            return true;
+        return false;
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal = authenticationState.User;
         pagingState.PageChanged += PagingState_PageChanged;
-        myFavorites = (await MyService.FetchUserFavoritesAsync());
+        myFavorites = (await MyService.FetchUserFavoritesAsync(ClaimsPrincipal));
         if (myFavorites != null)
             queryMyFav = myFavorites.AsQueryable();
 

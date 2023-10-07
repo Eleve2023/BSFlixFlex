@@ -1,10 +1,9 @@
 ﻿@using BSFlixFlex.Models;
 @using BSFlixFlex.Pages.Pagination;
-@using BSFlixFlex.Services;
-@using System.Security.Claims;
+
+
 @typeparam T where T : class, IDiscovryCommonProperty
-@inject AuthenticationStateProvider AuthStateProvider
-@inject NavigationManager NavManager
+
 <div class="g-col-12">
     <div class="grid row row-cols g-2">
         @if (Items != null)
@@ -14,19 +13,19 @@
                 var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
                 var header = string.Empty;
                 var pageUri = string.Empty;
-                Cinematography cin = Cinematography.Movie;
-                if (item is Movie movie)
+                
+                if (item is Movie or MovieDetails)
                 {
-                    header = movie.Title;
+                    header = item.Title;
                     pageUri = "films";
-                    cin = Cinematography.Movie;
                 }
-                if (item is TvShow tvShow)
+                else if (item is TvShow  or TvShowDetails )
                 {
-                    header = tvShow.Title;
+                    header = item.Title;
                     pageUri = "series";
-                    cin = Cinematography.Tv;
                 }
+                else throw new Exception();
+                var href = $"/{pageUri}/{item.Id}";
                 string resultat = string.Empty;
                 if (item.Overview != null)
                 {
@@ -40,8 +39,7 @@
                     {
                         resultat = item.Overview;
                     }
-                }
-                var href = $"/{pageUri}/{item.Id}";
+                }                
 
                 <div class="col">
                     <div class="card h-100 mb-1 g-col-md-1" style="width: 15rem;">
@@ -55,84 +53,17 @@
                         </div>
                         <div class="card-footer">
                             <a class="btm btm-info" href="@href">plus info </a>
-                            @if (isFavori(item.Id ?? 0, cin).Result)
-                            {
-                                <button @onclick="@(() => RemoveFavori(item.Id??0, cin))">supprime de mes favorie</button>
-                            }
-                            else
-                            {
-                                <button @onclick="@(() => AddFavori(item.Id??0, cin))">ajoute a de mes favorie</button>
-                            }
+                            <BtmFav Item="item"/>
                         </div>
                     </div>
                 </div>
-
-
             }
-
         }
     </div>
     <GridPaging PaginationState="PagingState" />
 </div>
 @code {
-    [Inject]
-    public required MyFavoriteService MyFavoriService { get; set; }
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
     [Parameter, EditorRequired] public required GridPagingState PagingState { get; set; }
     [Parameter, EditorRequired] public required string PageUri { get; set; }
-    public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
-    public bool IsAuthenticated => GetIsAuthenticated();
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
-        ClaimsPrincipal = authenticationState.User;
-        await base.OnInitializedAsync();
-    }
-
-    private bool GetIsAuthenticated()
-    {
-        if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
-            return true;
-        return false;
-    }
-
-    private async Task<bool> isFavori(int id, Cinematography cinematography)
-    {
-        var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography);
-        return _;
-    }
-    private async void AddFavori(int id, Cinematography cinematography)
-    {
-        if (IsAuthenticated)
-        {
-            await MyFavoriService.AddToFavoritesAsync(id, cinematography);
-            //await OnStateHasChange.InvokeAsync();
-            StateHasChanged();
-        }
-        else
-        {
-            GoLogin();
-
-        }
-    }
-    private async void RemoveFavori(int id, Cinematography cinematography)
-    {
-        if (IsAuthenticated)
-        {
-            await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography);
-            //await OnStateHasChange.InvokeAsync();
-            StateHasChanged();
-        }
-        else
-        {
-            GoLogin();
-        }
-    }
-    private void GoLogin()
-    {
-        var returnUrl = Uri.EscapeDataString(NavManager.Uri);
-        returnUrl = $"~/{PageUri}";
-        NavManager.NavigateTo($"/Identity/Account/Login?returnUrl={returnUrl}", true);
-    }
 }
