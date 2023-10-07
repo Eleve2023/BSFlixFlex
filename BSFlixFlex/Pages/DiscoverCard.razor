@@ -10,7 +10,9 @@
         {
             @foreach (var item in Items)
             {
-                var imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
+                var imgUrl = $"/photo-non-disponible-1.jpg";
+                if (item.PosterPath != null)
+                    imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
                 var header = string.Empty;
                 var pageUri = string.Empty;
                 
