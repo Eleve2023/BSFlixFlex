@@ -17,12 +17,12 @@ namespace BSFlixFlex.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get()
+        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get([FromQuery]int? page)
         {             
-            var r = await myFavoriService.FetchUserFavoritesAsync(this.User);
-            if (r != null)
+            var r = await myFavoriService.FetchUserFavoritesAsync(this.User,page??1 );
+            if (r.IsSuccess)
             {
-                new ApiListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.Count(), Items = r };
+                new ApiListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.TotalItems, Items = r.Items };
                 return Ok(r);
             }
             return NotFound();

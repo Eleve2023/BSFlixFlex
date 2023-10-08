@@ -19,13 +19,14 @@ public class MyFavoriteService(
     /// </summary>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     /// <returns>Une liste des favoris de l'utilisateur, ou null si l'utilisateur n'est pas authentifié.</returns>
-    public async Task<List<IDiscovryCommonProperty>?> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal)
+    public async Task<ApiListResponse<IDiscovryCommonProperty>> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal, int clientPageNumber, int clientPageSize = 10)
     {
         List<IDiscovryCommonProperty> myFavoris = [];
-
+        var skip = clientPageSize * (clientPageNumber - 1);
         if (UserIdentifier(claimsPrincipal) is string userIdentifier)
         {
-            var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).ToArray();
+            var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).Skip(skip).Take(clientPageSize).ToArray();
+            var totalItems = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).Count();
             if (_myFav.Length > 0)
             {
                 foreach (var fav in _myFav)
@@ -36,10 +37,10 @@ public class MyFavoriteService(
                         myFavoris.Add(item);
                     }
                 }
-                return myFavoris;
+                return new() { IsSuccess = true, Items = myFavoris, TotalItems = totalItems };
             }
         }
-        return null;
+        return new() {IsSuccess = false, Message = "Not Identifier" };
     }
 
     /// <summary>

@@ -8,15 +8,15 @@
 
 <h3>Favoris</h3>
 
-@if (myFavDisplay != null)
+@if (myFavorites != null)
 {
-    <DiscoverCard Items="myFavDisplay" PageUri="" PagingState="pagingState" />
+    <DiscoverCard Items="myFavorites" PageUri="" PagingState="pagingState" />
 
 }
 @code {
-    private List<IDiscovryCommonProperty>? myFavDisplay;
+
     private List<IDiscovryCommonProperty>? myFavorites;
-    private IQueryable<IDiscovryCommonProperty> queryMyFav= default!;
+
     private GridPagingState pagingState = new(10);
 
     public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
@@ -34,22 +34,25 @@
         var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
         ClaimsPrincipal = authenticationState.User;
         pagingState.PageChanged += PagingState_PageChanged;
-        myFavorites = (await MyService.FetchUserFavoritesAsync(ClaimsPrincipal));
-        if (myFavorites != null)
-            queryMyFav = myFavorites.AsQueryable();
-
-        pagingState.CurrentPage = 1;
+        await FillMyFavorites(1, pagingState.ItemsPerPage);
+        
         await base.OnInitializedAsync();
     }
-    private void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
+    private async void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
     {
-        e.TotalItems = queryMyFav.Count();
-        var queryable = queryMyFav;
-        if (e.Skip > 0)
-            queryable = queryable.Skip(e.Skip);
-        queryable = queryable.Take(e.ItemsPerPage);
-        myFavDisplay = queryable.ToList();
+        await FillMyFavorites(pagingState.CurrentPage, pagingState.ItemsPerPage);
+        
         StateHasChanged();
+    }
+
+    private async Task FillMyFavorites(int clientPageNumber, int clientPageSize)
+    {
+        var apiListResponse = await MyService.FetchUserFavoritesAsync(ClaimsPrincipal, clientPageNumber, clientPageSize);
+        if (apiListResponse.IsSuccess)
+        {
+            pagingState.TotalItems = apiListResponse.TotalItems;
+            myFavorites = apiListResponse.Items;
+        }
     }
 
 }
