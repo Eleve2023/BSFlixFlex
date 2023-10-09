@@ -3,7 +3,7 @@
 @using BSFlixFlex.Services;
 @using System.Security.Claims;
 @attribute [Authorize]
-@inject MyFavoriteService MyService
+@inject IMyFavoriteService MyService
 @inject AuthenticationStateProvider AuthStateProvider
 
 <h3>Favoris</h3>

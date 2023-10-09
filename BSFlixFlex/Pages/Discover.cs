@@ -10,7 +10,7 @@ namespace BSFlixFlex.Pages
         private readonly Cinematography cinematography = cinematography;
         protected GridPagingState pagingState = new(10);
 
-        [Inject] public required ApiTMBDService ApiTMBDService { get; set; }
+        [Inject] public required IApiTMBDService ApiTMBDService { get; set; }
         public List<T>? TopRated { get; set; }
         public List<T>? Items { get; set; }
         public string? Search { get; set; }

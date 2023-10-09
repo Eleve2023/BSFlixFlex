@@ -50,8 +50,8 @@ builder.Services.AddHttpClient("", client =>
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     client.Timeout = TimeSpan.FromSeconds(130);
 });
-builder.Services.AddTransient<MyFavoriteService>();
-builder.Services.AddTransient<ApiTMBDService>();
+builder.Services.AddTransient<IMyFavoriteService, MyFavoriteService>();
+builder.Services.AddTransient<IApiTMBDService, ApiTMBDService>();
 
 
 var app = builder.Build();

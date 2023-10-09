@@ -11,8 +11,8 @@ namespace BSFlixFlex.Services;
 /// </summary>
 public class MyFavoriteService(
     AppDbContext appDbContext,
-    ApiTMBDService apiTMBDService
-   )
+    IApiTMBDService apiTMBDService
+   ) : IMyFavoriteService
 {
     /// <summary>
     /// Récupère la liste des favoris de l'utilisateur.
@@ -23,8 +23,10 @@ public class MyFavoriteService(
     {
         List<IDiscovryCommonProperty> myFavoris = [];
         var skip = clientPageSize * (clientPageNumber - 1);
-        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
+        if (claimsPrincipal.Identity is { IsAuthenticated: true })
         {
+            var userIdentifier = UserIdentifier(claimsPrincipal);
+
             var _myFav = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).Skip(skip).Take(clientPageSize).ToArray();
             var totalItems = appDbContext.Set<MyFavorite>().Where(x => x.UserId == new Guid(userIdentifier)).Count();
             if (_myFav.Length > 0)
@@ -37,10 +39,11 @@ public class MyFavoriteService(
                         myFavoris.Add(item);
                     }
                 }
-                return new() { IsSuccess = true, Items = myFavoris, TotalItems = totalItems };
             }
+            return new() { IsSuccess = true, Items = myFavoris, TotalItems = totalItems };
         }
-        return new() {IsSuccess = false, Message = "Not Identifier" };
+        else
+            return new() { IsSuccess = false, Message = "Not Identifier" };
     }
 
     /// <summary>
@@ -52,8 +55,9 @@ public class MyFavoriteService(
     /// <returns>True si le film ou la série est dans les favoris de l'utilisateur, false sinon.</returns>
     public async Task<bool> IsFavoriteAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
+        if (claimsPrincipal.Identity is { IsAuthenticated: true })
         {
+            var userIdentifier = UserIdentifier(claimsPrincipal);
             var myFavorite = await BuildFavoriteQuery(id, cinematography, userIdentifier).FirstOrDefaultAsync();
             if (myFavorite != null)
             {
@@ -61,7 +65,7 @@ public class MyFavoriteService(
             }
             else { return false; }
         }
-       
+        else
             throw new Exception();
     }
 
@@ -73,8 +77,10 @@ public class MyFavoriteService(
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     public async Task AddToFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
+        if (claimsPrincipal.Identity is { IsAuthenticated: true })
         {
+            var userIdentifier = UserIdentifier(claimsPrincipal);
+
             var itemResponse = await FetchItemResponseAsync(cinematography, id);
             if (itemResponse is { IsSuccess: true, Item: var item } && item is not null)
             {
@@ -86,7 +92,11 @@ public class MyFavoriteService(
                     await appDbContext.SaveChangesAsync();
                 }
             }
+            else throw new Exception();
         }
+        else
+            throw new Exception();
+
     }
 
     /// <summary>
@@ -97,20 +107,23 @@ public class MyFavoriteService(
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     public async Task RemoveFromFavoritesAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)
     {
-        if (UserIdentifier(claimsPrincipal) is string userIdentifier)
+        if (claimsPrincipal.Identity is { IsAuthenticated: true })
         {
+            var userIdentifier = UserIdentifier(claimsPrincipal);
             var myFavorite = BuildFavoriteQuery(id, cinematography, userIdentifier);
             appDbContext.RemoveRange(myFavorite);
             await appDbContext.SaveChangesAsync();
         }
+        else
+            throw new Exception();
     }
 
 
-    private static string? UserIdentifier(ClaimsPrincipal claimsPrincipal)
+    private static string UserIdentifier(ClaimsPrincipal claimsPrincipal)
     {
-        return claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+        return claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("claim is not present");
     }
-        
+
 
     /// <summary>
     /// Récupère la réponse de l'élément en fonction du type de cinématographie et de l'ID.

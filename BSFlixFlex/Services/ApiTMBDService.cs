@@ -9,7 +9,7 @@ namespace BSFlixFlex.Services
     /// <summary>
     /// Classe de service pour interagir avec l'API TMBD.
     /// </summary>
-    public class ApiTMBDService(HttpClient httpClient)
+    public class ApiTMBDService(HttpClient httpClient) : IApiTMBDService
     {
         /// <summary>
         /// Récupère la liste des films ou séries les mieux notés.

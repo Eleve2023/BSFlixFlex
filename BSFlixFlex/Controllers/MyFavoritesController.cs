@@ -12,7 +12,7 @@ namespace BSFlixFlex.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = "CookiesOrBearer")]
-    public class MyFavoritesController(MyFavoriteService myFavoriService) : ControllerBase
+    public class MyFavoritesController(IMyFavoriteService myFavoriService) : ControllerBase
     {
 
         // GET: api/<ValuesController>

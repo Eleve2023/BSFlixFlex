@@ -19,7 +19,7 @@ namespace BSFlixFlex.Pages
 
         //[Inject] public required HttpClient HttpClient { get; set; }
         //[Inject] public required MyFavoriteService MyFavoriService { get; set; }
-        [Inject] public required ApiTMBDService ApiTMBDService { get; set;}
+        [Inject] public required IApiTMBDService ApiTMBDService { get; set;}
         [SupplyParameterFromQuery][Parameter] public required int Id { get; set; }
         public required T Item { get; set; }
 
