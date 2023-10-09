@@ -78,7 +78,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<IdentityUser>();
-app.MapGet("/api/test", (ClaimsPrincipal user) => user.Identity.Name)
+app.MapGet("/api/test", (ClaimsPrincipal user) => user.Identity!.Name)
     .RequireAuthorization("CookiesOrBearer");
 app.MiniApiApp();
 app.MapControllers();

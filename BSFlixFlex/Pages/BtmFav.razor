@@ -21,24 +21,7 @@ else
     private Cinematography cinematography = default!;
     private bool isFavorite;
 
-    [Parameter, EditorRequired] public IDiscovryCommonProperty Item { 
-        get 
-        {
-            return item  ;
-        }
-        set 
-        {
-            if (value is Movie or MovieDetails)
-            {
-                cinematography = Cinematography.Movie;
-            }
-            else if (value is TvShow or TvShowDetails)
-            {
-                cinematography = Cinematography.Tv;
-            }
-            item = value;
-        }
-    }
+    [Parameter, EditorRequired] public IDiscovryCommonProperty Item { get; set; } = default!;
     public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
     public bool IsAuthenticated => GetIsAuthenticated();
 
@@ -46,10 +29,33 @@ else
     {
         var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
         ClaimsPrincipal = authenticationState.User;
+        if (Item != null)
+        {
+            FillItem();
+        }
         isFavorite = await isFavori((int)item.Id!, cinematography);
         await base.OnInitializedAsync();
     }
-    
+    protected override Task OnParametersSetAsync()
+    {
+        if(Item != item)
+        {
+            FillItem();
+        }
+        return base.OnParametersSetAsync();
+    }
+    private void FillItem()
+    {
+        item = Item;
+        if (item is Movie or MovieDetails)
+        {
+            cinematography = Cinematography.Movie;
+        }
+        else if (item is TvShow or TvShowDetails)
+        {
+            cinematography = Cinematography.Tv;
+        }
+    }
     private bool GetIsAuthenticated()
     {
         if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
