@@ -1,7 +1,7 @@
 ﻿@if (Show)
 {
-    <div class="modal fade show" id="staticBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-         aria-labelledby="staticBackdropLiveLabel" _mstvisible="0" style="display: block;" aria-modal="true" role="dialog">
+    <div class="modal fade show @cssClass" id="staticBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" _mstvisible="0" style="display: block;@cssStyle" aria-modal="true" role="dialog" @onclick="ModalStatic">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -23,5 +23,16 @@
     [Parameter, EditorRequired] public bool Show { get; set; }
     [Parameter, EditorRequired] public EventCallback EventClose { get; set; }
     [Parameter, EditorRequired] public EventCallback EventLogin { get; set; }
+    private string cssClass = string.Empty;
+    private string cssStyle = string.Empty;
+
+    private async Task ModalStatic()
+    {
+        cssClass = "modal-static";
+        cssStyle = "overflow-y:hidden;";
+        await Task.Delay(500);
+        cssClass = string.Empty;
+        cssStyle = string.Empty;
+    }
 }
 
