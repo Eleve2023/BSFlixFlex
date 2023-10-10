@@ -4,11 +4,13 @@
 <h3>Series</h3>
 @if (Item != null)
 {
-    <div class="card mb-3">
-        @{
-            var imgUrl = $"https://image.tmdb.org/t/p/w500/" + Item.PosterPath;
-            var imgUrl1 = $"https://image.tmdb.org/t/p/w500/" + Item.BackdropPath;
-        }
+    var imgUrl = $"/photo-non-disponible-1.jpg";
+    var imgUrl1 = $"/photo-non-disponible-1.jpg";
+    if (Item.PosterPath != null)
+        imgUrl = $"https://image.tmdb.org/t/p/w500/" + Item.PosterPath;
+    if (Item.BackdropPath != null)
+        imgUrl1 = $"https://image.tmdb.org/t/p/w500/" + Item.BackdropPath;
+    <div class="card mb-3">        
         <img src="@imgUrl1" class="card-img-top" style="width:100%;height:120px" alt="...">
         <div class="card-header">Header</div>
         <div class="grid row g-0">
@@ -31,7 +33,7 @@
                         Genres:
                         @if (Item.Genres != null && Item.Genres.Count>0)
                         {
-                            @Item.Genres.Where(e => e.Name !=null).Select(e =>  e.Name).Aggregate((i, j) => i + ", " + j)
+                            @Item.Genres.Where(e =>e != null && e.Name !=null).Select(e =>  e!.Name).Aggregate((i, j) => i + ", " + j)
                         }
                     </div>
                 </div>
@@ -49,18 +51,25 @@
                     <div class="card-title">Production Companies</div>
                     @foreach (var item in Item.ProductionCompanies)
                     {
-                        <div class="grid row g-0">
-                            <div class="col-md-2">
-                                @{
-                                    var imgPro = "https://image.tmdb.org/t/p/w500/" + item.LogoPath;
-                                }
-                                <img src="@imgPro" class="img-fluid rounded-start" />
+                        if (item != null)
+                        {
+                            string imgPro = $"/photo-non-disponible-1.jpg";
+                            if (!string.IsNullOrEmpty(item.LogoPath))
+                            {
+                                imgPro = "https://image.tmdb.org/t/p/w500/" + item.LogoPath;
+                            }
+                            
+                            <div class="grid row g-0">
+                                <div class="col-md-2">
+                                   
+                                    <img src="@imgPro" class="img-fluid rounded-start" />
+                                </div>
+                                <div class="col-md-10 row">
+                                    Name : @item.Name
+                                    Origin Country :@item.OriginCountry
+                                </div>
                             </div>
-                            <div class="col-md-10 row">
-                                Name : @item.Name
-                                Origin Country :@item.OriginCountry
-                            </div>
-                        </div>
+                        }
                     }
                 </div>
                 <div>
