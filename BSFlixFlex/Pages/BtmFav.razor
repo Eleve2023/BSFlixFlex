@@ -5,21 +5,23 @@
 @inject AuthenticationStateProvider AuthStateProvider
 
 
-@if(item != null)
+@if (item != null)
 {
-@if (isFavorite)
-{
-    <button @onclick="@(() => RemoveFavori(item.Id??0, cinematography))">supprime de mes favorie!</button>
-}
-else
-{
-    <button @onclick="@(() => AddFavori(item.Id??0, cinematography))">ajoute a de mes favorie!</button>
-}
+    <ModalLoginRequired EventLogin="OnGoLoging" EventClose="CloseModalLoginRequired" Show="showModalLoginRequired" />
+    @if (isFavorite)
+    {
+        <button @onclick="@(() => RemoveFavori(item.Id??0, cinematography))">supprime de mes favorie!</button>
+    }
+    else
+    {
+        <button @onclick="@(() => AddFavori(item.Id??0, cinematography))">ajoute a de mes favorie!</button>
+    }
 }
 @code {
-    private IDiscovryCommonProperty item = default!;    
+    private IDiscovryCommonProperty item = default!;
     private Cinematography cinematography = default!;
     private bool isFavorite;
+    private bool showModalLoginRequired;
 
     [Parameter, EditorRequired] public IDiscovryCommonProperty Item { get; set; } = default!;
     public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
@@ -38,7 +40,7 @@ else
     }
     protected override Task OnParametersSetAsync()
     {
-        if(Item != item)
+        if (Item != item)
         {
             FillItem();
         }
@@ -66,7 +68,7 @@ else
     {
         if (IsAuthenticated)
         {
-            return await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);            
+            return await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);
         }
         else
             return false;
@@ -90,7 +92,7 @@ else
         {
             await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography, ClaimsPrincipal);
             isFavorite = await isFavori((int)item.Id!, cinematography);
-            StateHasChanged();            
+            StateHasChanged();
         }
         else
         {
@@ -99,8 +101,18 @@ else
     }
     private void GoLogin()
     {
-        var baseRelativePath = NavManager.ToBaseRelativePath(NavManager.Uri);        
+        showModalLoginRequired = true;
+        StateHasChanged();
+    }
+    private void OnGoLoging()
+    {
+        showModalLoginRequired = false;
+        var baseRelativePath = NavManager.ToBaseRelativePath(NavManager.Uri);
         var returnUrl = $"~/{baseRelativePath}";
         NavManager.NavigateTo($"/Identity/Account/Login?returnUrl={returnUrl}", true);
+    }
+    private void CloseModalLoginRequired()
+    {
+        showModalLoginRequired = false;
     }
 }
