@@ -10,7 +10,7 @@ namespace BSFlixFlex.Pages
         protected List<Video>? videoResults;
         protected bool isFavori;
         protected RenderFragment btmFavori;
-
+        protected bool load;
         public Details(Cinematography cinematography)
         {
             this.cinematography = cinematography;
@@ -25,6 +25,7 @@ namespace BSFlixFlex.Pages
 
         protected override async Task OnInitializedAsync()
         {
+
             var resultDetail = await ApiTMBDService.FetchItemDetailsAsync<T>(cinematography, Id);
             if (resultDetail.IsSuccess && resultDetail.Item != null)
                 Item = resultDetail.Item;

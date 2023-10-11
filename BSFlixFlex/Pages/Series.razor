@@ -5,8 +5,8 @@
 <div class="grid row">
 
     <SearchInput OnSearch="OnSearch" @bind-Value="@Search" />
-    <Strip Items="TopRated" />
-    <DiscoverCard Items="Items" PagingState="pagingState" PageUri="series" />
+    <Strip Items="TopRated" Load="loadTopRated"/>
+    <DiscoverCard Items="Items" PagingState="pagingState" PageUri="series" Load="loadItems" />
 
 </div>
 @code {

@@ -3,69 +3,76 @@
 
 
 @typeparam T where T : class, IDiscovryCommonProperty
-
-<div class="g-col-12">
-    <div class="grid row row-cols g-2">
-        @if (Items != null)
-        {
-            @foreach (var item in Items)
+@if (!Load)
+{
+    <div class="g-col-12">
+        <div class="grid row row-cols g-2">
+            @if (Items != null)
             {
-                var imgUrl = $"/photo-non-disponible-1.jpg";
-                if (item.PosterPath != null)
-                    imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
-                var header = string.Empty;
-                var pageUri = string.Empty;
-                
-                if (item is Movie or MovieDetails)
+                @foreach (var item in Items)
                 {
-                    header = item.Title;
-                    pageUri = "films";
-                }
-                else if (item is TvShow  or TvShowDetails )
-                {
-                    header = item.Title;
-                    pageUri = "series";
-                }
-                else throw new Exception();
-                var href = $"/{pageUri}/{item.Id}";
-                string resultat = string.Empty;
-                if (item.Overview != null)
-                {
-                    if (item.Overview.Length > 100)
-                    {
-                        resultat = item.Overview.Substring(0, 100);
-                        int dernierEspace = resultat.LastIndexOf(" ");
-                        resultat = item.Overview.Substring(0, dernierEspace) + "...";
-                    }
-                    else
-                    {
-                        resultat = item.Overview;
-                    }
-                }                
+                    var imgUrl = $"/photo-non-disponible-1.jpg";
+                    if (item.PosterPath != null)
+                        imgUrl = $"https://image.tmdb.org/t/p/w500/" + item.PosterPath;
+                    var header = string.Empty;
+                    var pageUri = string.Empty;
 
-                <div class="col">
-                    <div class="card h-100 mb-1 g-col-md-1" style="width: 15rem;">
-                        <img src="@imgUrl" class="card-img-top" alt="...">
-                        <div class="card-header">
-                            @header
-                        </div>
-                        <div class="card-body">
+                    if (item is Movie or MovieDetails)
+                    {
+                        header = item.Title;
+                        pageUri = "films";
+                    }
+                    else if (item is TvShow or TvShowDetails)
+                    {
+                        header = item.Title;
+                        pageUri = "series";
+                    }
+                    else throw new Exception();
+                    var href = $"/{pageUri}/{item.Id}";
+                    string resultat = string.Empty;
+                    if (item.Overview != null)
+                    {
+                        if (item.Overview.Length > 100)
+                        {
+                            resultat = item.Overview.Substring(0, 100);
+                            int dernierEspace = resultat.LastIndexOf(" ");
+                            resultat = item.Overview.Substring(0, dernierEspace) + "...";
+                        }
+                        else
+                        {
+                            resultat = item.Overview;
+                        }
+                    }
+                    <div class="col">
+                        <div class="card h-100 mb-1 g-col-md-1" style="width: 15rem;">
+                            <img src="@imgUrl" class="card-img-top" alt="...">
+                            <div class="card-header">
+                                @header
+                            </div>
+                            <div class="card-body">
 
-                            <p class="card-text">@resultat</p>
-                        </div>
-                        <div class="card-footer">
-                            <a class="btm btm-info" href="@href">plus info </a>
-                            <BtmFav Item="item"/>
+                                <p class="card-text">@resultat</p>
+                            </div>
+                            <div class="card-footer">
+                                <a class="btm btm-info" href="@href">plus info </a>
+                                <BtmFav Item="item" />
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
+
             }
-        }
+        </div>
+        <GridPaging PaginationState="PagingState" />
     </div>
-    <GridPaging PaginationState="PagingState" />
-</div>
+}
+else
+{
+    <CardPlaceholder />
+}
 @code {
     [Parameter, EditorRequired] public required ICollection<T> Items { get; set; }
     [Parameter, EditorRequired] public required GridPagingState PagingState { get; set; }
     [Parameter, EditorRequired] public required string PageUri { get; set; }
+    [Parameter] public bool Load { get; set; }
 }
