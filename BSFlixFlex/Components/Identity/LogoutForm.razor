@@ -6,9 +6,9 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<form @formname="logout" @onsubmit="OnSubmitAsync" method="post" @attributes="AdditionalAttributes">
+<form @formname="logout" @formname="logout1" @onsubmit="OnSubmitAsync" method="post" @attributes="AdditionalAttributes">
     <AntiforgeryToken />    
-    <input type="hidden" name="ReturnUrl" value="" />
+    <input type="hidden" name="ReturnUrl" value="@NavigationManager.Uri" />
 </form>
 
 @code {
