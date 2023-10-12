@@ -8,15 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\**" />
     <Compile Remove="Pages\**" />
     <Compile Remove="Shared\**" />
     <Compile Remove="wwwroot\css\**" />
+    <Content Remove="Areas\**" />
     <Content Remove="Pages\**" />
     <Content Remove="Shared\**" />
     <Content Remove="wwwroot\css\**" />
+    <EmbeddedResource Remove="Areas\**" />
     <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="Shared\**" />
     <EmbeddedResource Remove="wwwroot\css\**" />
+    <None Remove="Areas\**" />
     <None Remove="Pages\**" />
     <None Remove="Shared\**" />
     <None Remove="wwwroot\css\**" />

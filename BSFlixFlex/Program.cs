@@ -1,11 +1,8 @@
-using BSFlixFlex;
-using BSFlixFlex.Areas.Identity;
 using BSFlixFlex.Components;
 using BSFlixFlex.Data;
 using BSFlixFlex.Identity;
 using BSFlixFlex.Identity.Extensions;
 using BSFlixFlex.MiniApis;
-using BSFlixFlex.Models;
 using BSFlixFlex.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +10,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +48,7 @@ builder.Services.AddControllers();
 
 //builder.Services.AddRazorPages();
 //builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+//builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 var token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NzUxMTU1Y2QxZDQ1NjczMGJlOTg1OTViY2RlZTQ4NSIsInN1YiI6IjY1MTJkMDY0ZTFmYWVkMDEzYTBjOGYxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.eWjXyaDpeLGJPrWFfB_ZnAwjz2NldXIsPxKk4D-6tVM";
 builder.Services.AddHttpClient("", client =>
 {
