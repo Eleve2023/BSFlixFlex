@@ -8,6 +8,34 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\**" />
+    <Compile Remove="Pages\**" />
+    <Compile Remove="Shared\**" />
+    <Compile Remove="wwwroot\css\**" />
+    <Content Remove="Areas\**" />
+    <Content Remove="Pages\**" />
+    <Content Remove="Shared\**" />
+    <Content Remove="wwwroot\css\**" />
+    <EmbeddedResource Remove="Areas\**" />
+    <EmbeddedResource Remove="Pages\**" />
+    <EmbeddedResource Remove="Shared\**" />
+    <EmbeddedResource Remove="wwwroot\css\**" />
+    <None Remove="Areas\**" />
+    <None Remove="Pages\**" />
+    <None Remove="Shared\**" />
+    <None Remove="wwwroot\css\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="App.razor" />
+    <Content Remove="_Imports.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\bootstrap\bootstrap.min.css.map" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0-rc.2.23480.2" />
