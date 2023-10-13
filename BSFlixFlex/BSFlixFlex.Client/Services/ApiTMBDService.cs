@@ -13,7 +13,7 @@ namespace BSFlixFlex.Client.Services
             var pathbase = cinematography switch
             {
                 Cinematography.Movie => "movie",
-                Cinematography.Tv => "tv",
+                Cinematography.Tv => "tvshow",
                 _ => throw new NotSupportedException()
             };
             IEnumerable<KeyValuePair<string, StringValues>> query = [
@@ -55,7 +55,7 @@ namespace BSFlixFlex.Client.Services
             var pathbase = cinematography switch
             {
                 Cinematography.Movie => "movie",
-                Cinematography.Tv => "tv",
+                Cinematography.Tv => "tvshow",
                 _ => throw new NotSupportedException()
             };
             return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/api/{pathbase}/top_rated?page={clientPageNumber}");
