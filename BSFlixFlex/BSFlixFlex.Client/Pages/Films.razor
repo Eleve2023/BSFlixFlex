@@ -1,12 +1,12 @@
 ﻿@page "/films"
 @inherits Discover<Movie>
-@attribute [RenderModeInteractiveWebAssembly]
+@attribute [RenderModeInteractiveAuto]
 
 <h3>Films</h3>
 <SearchInput OnSearch="OnSearch" @bind-value="Search" />
 <Strip Items="TopRated" Load="loadTopRated" />
 
-<DiscoverCard Items="Items" PagingState="pagingState" PageUri="films" Load="loadItems" @rendermode="RenderMode.InteractiveAuto" />
+<DiscoverCard Items="Items" PagingState="pagingState" PageUri="films" Load="loadItems" />
 
 @code {
     public Films() : base(Cinematography.Movie)

@@ -1,6 +1,6 @@
 ﻿@page "/films/{Id:int}"
 @inherits Details<MovieDetails>
-@attribute [RenderModeInteractiveWebAssembly]
+@attribute [RenderModeInteractiveAuto]
 <h3>Component</h3>
 @btmFavori
 @if (Item != null)
@@ -76,7 +76,7 @@
                     <div class="card-title">Production Countries</div>
                     @foreach (var item in Item.ProductionCountries)
                     {
-                        <p>@item.Name</p>
+                        <p>@item?.Name</p>
                     }
                 </div>
                     
