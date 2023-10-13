@@ -1,15 +1,10 @@
 ﻿
 @using System.Security.Claims;
 @using BSFlixFlex.Client.Shareds.Models;
+@using Microsoft.AspNetCore.Authorization
 @inject NavigationManager NavManager
 @inject IMyFavoriteService MyFavoriService
-@inject AuthenticationStateProvider AuthStateProvider
 
-<AuthorizeView>
-    @{
-        AuthenticationState = context;
-    }
-</AuthorizeView>
 @if (item != null)
 {
     <ModalLoginRequired EventLogin="OnGoLoging" EventClose="CloseModalLoginRequired" Show="showModalLoginRequired" />
@@ -28,14 +23,14 @@
     private bool isFavorite;
     private bool showModalLoginRequired;
 
-    [CascadingParameter] public AuthenticationState AuthenticationState { get; set; }
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
     [Parameter, EditorRequired] public IDiscovryCommonProperty Item { get; set; } = default!;
     public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
     public bool IsAuthenticated => GetIsAuthenticated();
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var authenticationState = await AuthenticationState;
         ClaimsPrincipal = authenticationState.User;
         if (Item != null)
         {
@@ -44,13 +39,16 @@
         isFavorite = await isFavori((int)item.Id!, cinematography);
         await base.OnInitializedAsync();
     }
-    protected override Task OnParametersSetAsync()
+    
+    protected override async Task OnParametersSetAsync()
     {
+        var authenticationState = await AuthenticationState;
+        ClaimsPrincipal = authenticationState.User;
         if (Item != item)
         {
             FillItem();
         }
-        return base.OnParametersSetAsync();
+        await base.OnParametersSetAsync();
     }
     private void FillItem()
     {
@@ -66,17 +64,12 @@
     }
     private  bool GetIsAuthenticated()
     {
-
         if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
             return true;
         return false;
     }
     private async Task<bool> isFavori(int id, Cinematography cinematography)
-    {
-        
-        //var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);
-        //Console.WriteLine("isfavortite" + _);
-        //return _;
+    {        
         if (IsAuthenticated)
         {
             return await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);
@@ -85,13 +78,7 @@
             return false;
     }
     private async void AddFavori(int id, Cinematography cinematography)
-    {
-        Console.WriteLine("IsAuthenticated" + IsAuthenticated);
-        Console.WriteLine(ClaimsPrincipal.Identity?.Name);
-        var authenticationState = AuthenticationState;
-        ClaimsPrincipal = authenticationState.User;
-        Console.WriteLine("IsAuthenticated2" + IsAuthenticated);
-        Console.WriteLine("2"+ClaimsPrincipal.Identity?.Name);
+    {        
         if (IsAuthenticated)
         {
             await MyFavoriService.AddToFavoritesAsync(id, cinematography, ClaimsPrincipal);
