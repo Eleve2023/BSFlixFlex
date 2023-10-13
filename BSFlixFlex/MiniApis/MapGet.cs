@@ -1,5 +1,5 @@
-﻿using BSFlixFlex.Models;
-using BSFlixFlex.Services;
+﻿using BSFlixFlex.Client.Shareds.Interfaces;
+using BSFlixFlex.Client.Shareds.Models;
 
 namespace BSFlixFlex.MiniApis
 {
@@ -36,13 +36,20 @@ namespace BSFlixFlex.MiniApis
             
             app.MapGet("api/movie/{id:int}", async (int id, IApiTMBDService apiTMBDService) =>
             {
-                return await apiTMBDService.FetchItemDetailsAsync<Movie>(Cinematography.Movie, id);
+                return await apiTMBDService.FetchItemDetailsAsync<MovieDetails>(Cinematography.Movie, id);
             });
             app.MapGet("api/tvshow/{id:int}", async (int id, IApiTMBDService apiTMBDService) =>
             {
-                return await apiTMBDService.FetchItemDetailsAsync<TvShow>(Cinematography.Tv, id);
+                return await apiTMBDService.FetchItemDetailsAsync<TvShowDetails>(Cinematography.Tv, id);
             });
-
+            app.MapGet("api/videos/movie/{id:int}", async (int id, IApiTMBDService apiTMBDService) =>
+            {
+                return await apiTMBDService.FetchItemVideosAsync<Movie>(Cinematography.Movie, id);
+            });
+            app.MapGet("api/videos/tvshow/{id:int}", async (int id, IApiTMBDService apiTMBDService) =>
+            {
+                return await apiTMBDService.FetchItemVideosAsync<TvShow>(Cinematography.Tv, id);
+            });
             return app;
         }
        

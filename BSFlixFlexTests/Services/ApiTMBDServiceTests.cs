@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BSFlixFlex.Models;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Net.Http.Json;
 using BSFlixFlex.Exceptions;
+using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Exceptions;
 
 namespace BSFlixFlex.Services.Tests
 {

@@ -1,0 +1,38 @@
+﻿@if (Show)
+{
+    <div class="modal fade show @cssClass" id="staticBackdropLive" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLiveLabel" _mstvisible="0" style="display: block;@cssStyle" aria-modal="true" role="dialog" @onclick="ModalStatic">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Connexion requise</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="EventClose"></button>
+                </div>
+                <div class="modal-body">
+                    Vous devez être connecté pour continuer. Voulez-vous vous connecter maintenant ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="EventClose">Fermer</button>
+                    <button type="button" class="btn btn-primary" @onclick="EventLogin">Se connecter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    [Parameter, EditorRequired] public bool Show { get; set; }
+    [Parameter, EditorRequired] public EventCallback EventClose { get; set; }
+    [Parameter, EditorRequired] public EventCallback EventLogin { get; set; }
+    private string cssClass = string.Empty;
+    private string cssStyle = string.Empty;
+
+    private async Task ModalStatic()
+    {
+        cssClass = "modal-static";
+        cssStyle = "overflow-y:hidden;";
+        await Task.Delay(500);
+        cssClass = string.Empty;
+        cssStyle = string.Empty;
+    }
+}
+

@@ -1,0 +1,25 @@
+﻿@page "/auth"
+
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthState
+@attribute [Authorize]
+@attribute [RenderModeInteractiveWebAssembly]
+
+<PageTitle>Auth</PageTitle>
+
+<h1>You are authenticated</h1>
+
+<AuthorizeView>
+    Hello @context.User.Identity?.Name!
+</AuthorizeView>
+test @user?.Identity?.Name!
+@code{
+    private ClaimsPrincipal user;
+    protected override async Task OnInitializedAsync()
+    {
+
+        var _ =  await AuthState.GetAuthenticationStateAsync();
+        user = _.User;
+    }
+}

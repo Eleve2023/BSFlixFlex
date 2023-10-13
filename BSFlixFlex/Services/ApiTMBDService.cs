@@ -1,6 +1,8 @@
-﻿using BSFlixFlex.Exceptions;
+﻿using BSFlixFlex.Client.Shareds.Exceptions;
+using BSFlixFlex.Client.Shareds.Interfaces;
+using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Exceptions;
 using BSFlixFlex.Exceptions.ApiTMBD;
-using BSFlixFlex.Models;
 using System.IO;
 using System.Linq;
 

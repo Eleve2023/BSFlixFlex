@@ -1,5 +1,4 @@
-﻿using BSFlixFlex.Services;
-using BSFlixFlex.Data;
+﻿using BSFlixFlex.Data;
 using BSFlixFlex.Models;
 using BSFlixFlexTests.Services;
 using Microsoft.Data.Sqlite;
@@ -8,6 +7,8 @@ using Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework;
 using Moq;
 using System.Security.Claims;
 using Xunit;
+using BSFlixFlex.Client.Shareds.Interfaces;
+using BSFlixFlex.Client.Shareds.Models;
 
 namespace BSFlixFlex.Services.Tests
 {

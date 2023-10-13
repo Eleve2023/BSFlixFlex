@@ -1,3 +1,5 @@
+using BSFlixFlex.Client.Pages;
+using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Components;
 using BSFlixFlex.Data;
 using BSFlixFlex.Identity;
@@ -15,12 +17,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<UserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -93,7 +96,9 @@ app.MiniApiApp();
 //app.MapBlazorHub();
 //app.MapFallbackToPage("/_Host");
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Films).Assembly);
 
 app.MapAdditionalIdentityEndpoints();
 

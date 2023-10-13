@@ -1,0 +1,31 @@
+﻿@using System.Linq.Expressions;
+<div class="input-group input-group-sm mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-sm">Find</span>
+    <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" @bind-value="@_Value">
+    <button class="btn btn-outline-secondary" type="button" @onclick="OnSearch">OK</button>
+    
+
+</div>
+
+@code {
+    private string _value = default!;
+
+    [Parameter, EditorRequired] public required EventCallback OnSearch { get; set; }
+    [Parameter] public string Value { get => _Value; set => _Value = value; }    
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<string>> ValueExpression { get; set; } = null!;
+
+    protected string _Value
+    {
+        get => _value;
+        set
+        {
+            if (!EqualityComparer<string>.Default.Equals(_value, value))
+            {
+                _value = value;
+                ValueChanged.InvokeAsync(value);
+            }
+        }
+    }
+}

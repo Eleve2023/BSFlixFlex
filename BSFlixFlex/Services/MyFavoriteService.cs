@@ -1,4 +1,6 @@
-﻿using BSFlixFlex.Data;
+﻿using BSFlixFlex.Client.Shareds.Interfaces;
+using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Data;
 using BSFlixFlex.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;

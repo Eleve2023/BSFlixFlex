@@ -1,0 +1,135 @@
+﻿
+@using System.Security.Claims;
+@using BSFlixFlex.Client.Shareds.Models;
+@inject NavigationManager NavManager
+@inject IMyFavoriteService MyFavoriService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    @{
+        AuthenticationState = context;
+    }
+</AuthorizeView>
+@if (item != null)
+{
+    <ModalLoginRequired EventLogin="OnGoLoging" EventClose="CloseModalLoginRequired" Show="showModalLoginRequired" />
+    @if (isFavorite)
+    {
+        <button @onclick="@(() => RemoveFavori(item.Id??0, cinematography))">supprime de mes favorie!</button>
+    }
+    else
+    {
+        <button @onclick="@(() => AddFavori(item.Id??0, cinematography))">ajoute a de mes favorie!</button>
+    }
+}
+@code {
+    private IDiscovryCommonProperty item = default!;
+    private Cinematography cinematography = default!;
+    private bool isFavorite;
+    private bool showModalLoginRequired;
+
+    [CascadingParameter] public AuthenticationState AuthenticationState { get; set; }
+    [Parameter, EditorRequired] public IDiscovryCommonProperty Item { get; set; } = default!;
+    public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
+    public bool IsAuthenticated => GetIsAuthenticated();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        ClaimsPrincipal = authenticationState.User;
+        if (Item != null)
+        {
+            FillItem();
+        }
+        isFavorite = await isFavori((int)item.Id!, cinematography);
+        await base.OnInitializedAsync();
+    }
+    protected override Task OnParametersSetAsync()
+    {
+        if (Item != item)
+        {
+            FillItem();
+        }
+        return base.OnParametersSetAsync();
+    }
+    private void FillItem()
+    {
+        item = Item;
+        if (item is Movie or MovieDetails)
+        {
+            cinematography = Cinematography.Movie;
+        }
+        else if (item is TvShow or TvShowDetails)
+        {
+            cinematography = Cinematography.Tv;
+        }
+    }
+    private  bool GetIsAuthenticated()
+    {
+
+        if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
+            return true;
+        return false;
+    }
+    private async Task<bool> isFavori(int id, Cinematography cinematography)
+    {
+        
+        //var _ = await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);
+        //Console.WriteLine("isfavortite" + _);
+        //return _;
+        if (IsAuthenticated)
+        {
+            return await MyFavoriService.IsFavoriteAsync(id, cinematography, ClaimsPrincipal);
+        }
+        else
+            return false;
+    }
+    private async void AddFavori(int id, Cinematography cinematography)
+    {
+        Console.WriteLine("IsAuthenticated" + IsAuthenticated);
+        Console.WriteLine(ClaimsPrincipal.Identity?.Name);
+        var authenticationState = AuthenticationState;
+        ClaimsPrincipal = authenticationState.User;
+        Console.WriteLine("IsAuthenticated2" + IsAuthenticated);
+        Console.WriteLine("2"+ClaimsPrincipal.Identity?.Name);
+        if (IsAuthenticated)
+        {
+            await MyFavoriService.AddToFavoritesAsync(id, cinematography, ClaimsPrincipal);
+            isFavorite = await isFavori((int)item.Id!, cinematography);
+            StateHasChanged();
+        }
+        else
+        {
+            GoLogin();
+        }
+    }
+    private async void RemoveFavori(int id, Cinematography cinematography)
+    {
+        if (IsAuthenticated)
+        {
+            await MyFavoriService.RemoveFromFavoritesAsync(id, cinematography, ClaimsPrincipal);
+            isFavorite = await isFavori((int)item.Id!, cinematography);
+            StateHasChanged();
+        }
+        else
+        {
+            GoLogin();
+        }
+    }
+    private void GoLogin()
+    {
+        showModalLoginRequired = true;
+        StateHasChanged();
+    }
+    private void OnGoLoging()
+    {
+        showModalLoginRequired = false;
+        var baseRelativePath = NavManager.ToBaseRelativePath(NavManager.Uri);
+        var returnUrl = $"/{baseRelativePath}";
+        NavManager.NavigateTo($"/Account/Login?returnUrl={returnUrl}");
+    }
+    private void CloseModalLoginRequired()
+    {
+        showModalLoginRequired = false;
+    }
+}

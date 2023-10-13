@@ -1,7 +1,8 @@
-﻿using BSFlixFlex.Models;
-using BSFlixFlex.Services;
+﻿using BSFlixFlex.Client.Shareds.Interfaces;
+using BSFlixFlex.Client.Shareds.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -17,9 +18,9 @@ namespace BSFlixFlex.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get([FromQuery]int? page)
-        {             
-            var r = await myFavoriService.FetchUserFavoritesAsync(this.User,page??1 );
+        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get([FromQuery] int? page)
+        {
+            var r = await myFavoriService.FetchUserFavoritesAsync(this.User, page ?? 1);
             if (r.IsSuccess)
             {
                 new ApiListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.TotalItems, Items = r.Items };
@@ -29,18 +30,18 @@ namespace BSFlixFlex.Controllers
         }
 
         // GET api/<ValuesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{cinematography}")]
+        public async Task<bool> Get(Cinematography cinematography,int id)
         {
-            return "value";
+            return await myFavoriService.IsFavoriteAsync(id, cinematography, User);            
         }
 
         // POST api/<ValuesController>
         [HttpPost]
         public async void Post(int id, string cinematography)
         {
-            var _ = Enum.TryParse<Cinematography>(cinematography, true,out Cinematography result);
-            await myFavoriService.AddToFavoritesAsync(id,result ,this.User);
+            var _ = Enum.TryParse<Cinematography>(cinematography, true, out Cinematography result);
+            await myFavoriService.AddToFavoritesAsync(id, result, this.User);
         }
 
         // PUT api/<ValuesController>/5
