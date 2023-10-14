@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Xunit;
 using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Models;
 
 namespace BSFlixFlex.Services.Tests
 {

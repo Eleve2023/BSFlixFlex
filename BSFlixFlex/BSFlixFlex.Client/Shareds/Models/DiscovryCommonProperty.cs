@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BSFlixFlex.Client.Shareds.Models
-{
+{    
     public abstract class DiscovryCommonProperty : IDiscovryCommonProperty
     {
         [JsonPropertyName("genre_ids")]

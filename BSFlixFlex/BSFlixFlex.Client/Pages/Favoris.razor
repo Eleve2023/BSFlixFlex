@@ -6,8 +6,8 @@
 @using Microsoft.AspNetCore.Authorization
 
 @attribute [Authorize]
+@attribute [RenderModeInteractiveAuto]
 @inject IMyFavoriteService MyService
-@inject AuthenticationStateProvider AuthStateProvider
 
 <h3>Favoris</h3>
 
@@ -22,6 +22,7 @@
 
     private GridPagingState pagingState = new(10);
 
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
     public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
     public bool IsAuthenticated => GetIsAuthenticated();
 
@@ -34,12 +35,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var authenticationState = await AuthenticationState;
         ClaimsPrincipal = authenticationState.User;
         pagingState.PageChanged += PagingState_PageChanged;
         await FillMyFavorites(1, pagingState.ItemsPerPage);
         
         await base.OnInitializedAsync();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        var authenticationState = await AuthenticationState;
+        ClaimsPrincipal = authenticationState.User;
+        await base.OnParametersSetAsync();
     }
     private async void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
     {

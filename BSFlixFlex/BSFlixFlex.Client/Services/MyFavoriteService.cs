@@ -1,5 +1,6 @@
 ﻿using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace BSFlixFlex.Client.Services
@@ -11,9 +12,10 @@ namespace BSFlixFlex.Client.Services
             throw new NotImplementedException();
         }
 
-        public Task<ApiListResponse<IDiscovryCommonProperty>> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal, int clientPageNumber, int clientPageSize = 10)
+        public async Task<ApiListResponse<IDiscovryCommonProperty>> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal, int clientPageNumber, int clientPageSize = 10)
         {
-            throw new NotImplementedException();
+           return await httpClient.GetFromJsonAsync<ApiListResponse<IDiscovryCommonProperty>>($"/api/MyFavorites?page={clientPageNumber}&pageSize={clientPageSize}");
+           
         }
 
         public async Task<bool> IsFavoriteAsync(int id, Cinematography cinematography, ClaimsPrincipal claimsPrincipal)

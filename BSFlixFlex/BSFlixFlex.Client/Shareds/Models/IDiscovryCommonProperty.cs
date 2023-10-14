@@ -1,5 +1,11 @@
-﻿namespace BSFlixFlex.Client.Shareds.Models
-{
+﻿using System.Text.Json.Serialization;
+
+namespace BSFlixFlex.Client.Shareds.Models
+{   
+    [JsonDerivedType(typeof(MovieDetails), typeDiscriminator: "MovieDetails")]
+    [JsonDerivedType(typeof(Movie), typeDiscriminator: "Movie")]
+    [JsonDerivedType(typeof(TvShowDetails), typeDiscriminator: "TvShowDetails")]
+    [JsonDerivedType(typeof(TvShow), typeDiscriminator: "TvShow")]
     public interface IDiscovryCommonProperty
     {
         string? BackdropPath { get; set; }
