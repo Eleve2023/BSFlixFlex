@@ -37,7 +37,7 @@ namespace BSFlixFlex.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async void Post(int id, string cinematography)
+        public async Task Post(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true, out Cinematography result);
             await myFavoriService.AddToFavoritesAsync(id, result, this.User);
@@ -50,8 +50,8 @@ namespace BSFlixFlex.Controllers
         }
 
         // DELETE api/<ValuesController>/5
-        [HttpDelete("{id}")]
-        public async void Delete(int id, string cinematography)
+        [HttpDelete("{cinematography}/{id}")]
+        public async Task Delete(int id, string cinematography)
         {
             var _ = Enum.TryParse<Cinematography>(cinematography, true, out Cinematography result);
             await myFavoriService.RemoveFromFavoritesAsync(id, result, this.User);
