@@ -1,0 +1,68 @@
+﻿@page "/favoris"
+@using System.Security.Claims
+@using BSFlixFlex.Client.Shareds.Components.Pagination
+@using BSFlixFlex.Client.Shareds.Interfaces
+@using BSFlixFlex.Client.Shareds.Models
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+@attribute [RenderModeInteractiveAuto]
+@inject IMyFavoriteService MyService
+
+<h3>Favoris</h3>
+
+@if (myFavorites != null)
+{
+    <DiscoverCard Items="myFavorites" PageUri="" PagingState="pagingState" />
+
+}
+@code {
+
+    private List<IDiscovryCommonProperty>? myFavorites;
+
+    private GridPagingState pagingState = new(10);
+
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+    public ClaimsPrincipal ClaimsPrincipal { get; set; } = default!;
+    public bool IsAuthenticated => GetIsAuthenticated();
+
+    private bool GetIsAuthenticated()
+    {
+        if (ClaimsPrincipal.Identity is { IsAuthenticated: true })
+            return true;
+        return false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationState;
+        ClaimsPrincipal = authenticationState.User;
+        pagingState.PageChanged += PagingState_PageChanged;
+        await FillMyFavorites(1, pagingState.ItemsPerPage);
+        
+        await base.OnInitializedAsync();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        var authenticationState = await AuthenticationState;
+        ClaimsPrincipal = authenticationState.User;
+        await base.OnParametersSetAsync();
+    }
+    private async void PagingState_PageChanged(object? sender, GridPageChangedEventArgs e)
+    {
+        await FillMyFavorites(pagingState.CurrentPage, pagingState.ItemsPerPage);
+        
+        StateHasChanged();
+    }
+
+    private async Task FillMyFavorites(int clientPageNumber, int clientPageSize)
+    {
+        var apiListResponse = await MyService.FetchUserFavoritesAsync(ClaimsPrincipal, clientPageNumber, clientPageSize);
+        if (apiListResponse.IsSuccess)
+        {
+            pagingState.TotalItems = apiListResponse.TotalItems;
+            myFavorites = apiListResponse.Items;
+        }
+    }
+
+}

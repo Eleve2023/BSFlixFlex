@@ -1,0 +1,101 @@
+﻿@page "/series/{Id:int}"
+@using BSFlixFlex.Client.Shareds.Models
+@inherits Details<TvShowDetails>
+@attribute [RenderModeInteractiveAuto]
+@btmFavori
+<h3>Series</h3>
+@if (Item != null)
+{
+    var imgUrl = $"/photo-non-disponible-1.jpg";
+    var imgUrl1 = $"/photo-non-disponible-1.jpg";
+    if (Item.PosterPath != null)
+        imgUrl = $"https://image.tmdb.org/t/p/w500/" + Item.PosterPath;
+    if (Item.BackdropPath != null)
+        imgUrl1 = $"https://image.tmdb.org/t/p/w500/" + Item.BackdropPath;
+    <div class="card mb-3">        
+        <img src="@imgUrl1" class="card-img-top" style="width:100%;height:120px" alt="...">
+        <div class="card-header">Header</div>
+        <div class="grid row g-0">
+            <div class="col-md-4">
+                <div class="grid">
+
+                    <img src="@imgUrl" class="img-fluid rounded-start" alt="...">
+                    <div class="card-title">
+                        Original Title : @Item.OriginalName <br />
+                        Number Of Episodes: @Item.NumberOfEpisodes<br />
+                        Number Of Seasons: @Item.NumberOfSeasons<br />
+                        @* Original Language : @Item.<br /> *@
+                        First Air Date : @Item.FirstAirDate<br />
+                        
+                        Status: @Item.Status<br />
+                        Tagline: @Item.Tagline<br />
+                        @* Popularity: @Item.Popularity<br /> *@
+                        VoteAverage: @Item.VoteAverage<br />
+                        VoteCount: @Item.VoteCount<br />
+                        Genres:
+                        @if (Item.Genres != null && Item.Genres.Count>0)
+                        {
+                            @Item.Genres.Where(e =>e != null && e.Name !=null).Select(e =>  e!.Name).Aggregate((i, j) => i + ", " + j)
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card-title">
+                    Title : @Item.Title <br />
+
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Overview:</div>
+                    <p class="card-text"> @Item.Overview</p>
+                </div>
+                <div>
+                    <div class="card-title">Production Companies</div>
+                    @foreach (var item in Item.ProductionCompanies)
+                    {
+                        if (item != null)
+                        {
+                            string imgPro = $"/photo-non-disponible-1.jpg";
+                            if (!string.IsNullOrEmpty(item.LogoPath))
+                            {
+                                imgPro = "https://image.tmdb.org/t/p/w500/" + item.LogoPath;
+                            }
+                            
+                            <div class="grid row g-0">
+                                <div class="col-md-2">
+                                   
+                                    <img src="@imgPro" class="img-fluid rounded-start" />
+                                </div>
+                                <div class="col-md-10 row">
+                                    Name : @item.Name
+                                    Origin Country :@item.OriginCountry
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div>
+                    <div class="card-title">Production Countries</div>
+                    @foreach (var item in Item.ProductionCountry)
+                    {
+                        <p>@item?.Name</p>
+                    }
+                </div>
+
+
+
+            </div>
+        </div>
+        <div class="card-footer"></div>
+    </div>
+}
+@if (videoResults != null)
+{
+    @foreach (var item in videoResults)
+    {
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/@item.VideoKey" frameborder="0" allowfullscreen></iframe>
+    }
+}
+@code {
+    public Serie():base(Cinematography.Tv){}
+    }
