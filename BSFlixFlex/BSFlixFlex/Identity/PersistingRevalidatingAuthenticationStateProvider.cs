@@ -85,13 +85,15 @@ namespace BSFlixFlex.Identity
             {
                 var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
                 var email = principal.FindFirst(_options.ClaimsIdentity.EmailClaimType)?.Value;
+                var userName = principal.FindFirst(_options.ClaimsIdentity.UserNameClaimType)?.Value;
 
-                if (userId != null && email != null)
+                if (userId != null && email != null && userName != null)
                 {
                     _state.PersistAsJson(nameof(UserInfo), new UserInfo
                     {
                         UserId = userId,
                         Email = email,
+                        UserName = userName
                     });
                 }
             }
