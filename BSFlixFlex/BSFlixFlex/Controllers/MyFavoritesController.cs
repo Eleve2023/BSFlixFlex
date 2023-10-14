@@ -30,9 +30,9 @@ namespace BSFlixFlex.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{cinematography}")]
-        public async Task<bool> Get(Cinematography cinematography,int id)
+        public async Task<bool> Get(Cinematography cinematography, int id)
         {
-            return await myFavoriService.IsFavoriteAsync(id, cinematography, User);            
+            return await myFavoriService.IsFavoriteAsync(id, cinematography, User);
         }
 
         // POST api/<ValuesController>
