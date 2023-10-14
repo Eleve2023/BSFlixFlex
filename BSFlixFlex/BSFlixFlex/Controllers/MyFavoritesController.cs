@@ -18,12 +18,11 @@ namespace BSFlixFlex.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<ActionResult<ApiListResponse<IDiscovryCommonProperty>>> Get([FromQuery] int? page)
+        public async Task<ActionResult<ApiListResponse<MyFavoriteItem>>> Get([FromQuery] int? page, [FromQuery] int? pageSize)
         {
-            var r = await myFavoriService.FetchUserFavoritesAsync(this.User, page ?? 1);
+            var r = await myFavoriService.FetchUserFavoritesAsync(this.User, page ?? 1, pageSize ?? 10);
             if (r.IsSuccess)
-            {
-                new ApiListResponse<IDiscovryCommonProperty>() { IsSuccess = true, TotalItems = r.TotalItems, Items = r.Items };
+            {                
                 return Ok(r);
             }
             return NotFound();
@@ -31,9 +30,9 @@ namespace BSFlixFlex.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{cinematography}")]
-        public async Task<bool> Get(Cinematography cinematography,int id)
+        public async Task<bool> Get(Cinematography cinematography, int id)
         {
-            return await myFavoriService.IsFavoriteAsync(id, cinematography, User);            
+            return await myFavoriService.IsFavoriteAsync(id, cinematography, User);
         }
 
         // POST api/<ValuesController>

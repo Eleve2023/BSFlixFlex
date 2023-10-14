@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BSFlixFlex.Client.Shareds.Models
 {
-    public abstract class DiscovryCommonProperty : IDiscovryCommonProperty
+    public class DiscovryCommonProperty : IDiscovryCommonProperty
     {
         [JsonPropertyName("genre_ids")]
         public List<int>? GenreIds { get; set; }

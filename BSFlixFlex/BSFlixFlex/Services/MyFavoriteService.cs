@@ -21,9 +21,9 @@ public class MyFavoriteService(
     /// </summary>
     /// <param name="claimsPrincipal">Le ClaimsPrincipal de l'utilisateur. Doit être fourni si appelé en dehors d'un composant Razor.</param>
     /// <returns>Une liste des favoris de l'utilisateur, ou null si l'utilisateur n'est pas authentifié.</returns>
-    public async Task<ApiListResponse<IDiscovryCommonProperty>> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal, int clientPageNumber, int clientPageSize = 10)
+    public async Task<ApiListResponse<MyFavoriteItem>> FetchUserFavoritesAsync(ClaimsPrincipal claimsPrincipal, int clientPageNumber, int clientPageSize = 10)       
     {
-        List<IDiscovryCommonProperty> myFavoris = [];
+        List<MyFavoriteItem> myFavoris = [];
         var skip = clientPageSize * (clientPageNumber - 1);
         if (claimsPrincipal.Identity is { IsAuthenticated: true })
         {
@@ -38,7 +38,11 @@ public class MyFavoriteService(
                     var itemResponse = await FetchItemResponseAsync(fav.Cinematography, fav.IdCinematography);
                     if (itemResponse is { IsSuccess: true, Item: var item } && item is not null)
                     {
-                        myFavoris.Add(item);
+                        myFavoris.Add(new(item));
+                        //if(item is MovieDetails movie)
+                        //myFavoris.Add(new(movie));
+                        //if (item is TvShowDetails  tvShow)
+                        //    myFavoris.Add(new(tvShow));
                     }
                 }
             }
@@ -133,7 +137,7 @@ public class MyFavoriteService(
     /// <param name="cinematography">Le type de cinématographie (Film ou Série).</param>
     /// <param name="id">L'ID du film ou de la série.</param>
     /// <returns>La réponse de l'élément, ou null si le type de cinématographie n'est pas géré.</returns>
-    private async Task<ApiItemResponse<IDiscovryCommonProperty>?> FetchItemResponseAsync(Cinematography cinematography, int id)
+    private async Task<ApiItemResponse<IDiscovryCommonProperty>?> FetchItemResponseAsync(Cinematography cinematography, int id)       
     {
         return cinematography switch
         {
