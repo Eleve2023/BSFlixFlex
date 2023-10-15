@@ -15,9 +15,17 @@ using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("DataSource=users.db"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("DataSource=app.db"));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
 builder.Services.AddAuthorizationBuilder().AddPolicy("CookiesOrBearer", policy =>
 {
     policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme);
@@ -38,21 +46,19 @@ builder.Services.AddAuthentication(o =>
     .AddBearerToken(IdentityConstants.BearerScheme)
     .AddIdentityCookies(o => { });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("DataSource=users.db"));
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("DataSource=app.db"));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders()
     .AddApiEndpoints();
-builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers();
 
 var token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NzUxMTU1Y2QxZDQ1NjczMGJlOTg1OTViY2RlZTQ4NSIsInN1YiI6IjY1MTJkMDY0ZTFmYWVkMDEzYTBjOGYxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.eWjXyaDpeLGJPrWFfB_ZnAwjz2NldXIsPxKk4D-6tVM";
 builder.Services.AddHttpClient("", client =>
@@ -61,6 +67,7 @@ builder.Services.AddHttpClient("", client =>
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     client.Timeout = TimeSpan.FromSeconds(130);
 });
+
 builder.Services.AddTransient<IMyFavoriteService, MyFavoriteService>();
 builder.Services.AddTransient<IApiTMBDService, ApiTMBDService>();
 
@@ -70,15 +77,23 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.UseSwagger(c =>
+    {
+        c.RouteTemplate = "mycoolapi/swagger/{documentname}/swagger.json";
+    });
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/mycoolapi/swagger/v1/swagger.json", "My Cool API V1");
+        c.RoutePrefix = "mycoolapi/swagger";
+    });
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
