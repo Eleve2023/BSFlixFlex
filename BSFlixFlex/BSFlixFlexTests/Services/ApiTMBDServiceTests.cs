@@ -12,27 +12,35 @@ using System.Net.Http.Json;
 using BSFlixFlex.Exceptions;
 using BSFlixFlex.Client.Shareds.Models;
 using BSFlixFlex.Client.Shareds.Exceptions;
+using Microsoft.Extensions.Http;
+using Moq;
 
 namespace BSFlixFlex.Services.Tests
 {
     public class ApiTMBDServiceTests
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public ApiTMBDServiceTests()
         {
             var client = new HttpClient() { BaseAddress = new Uri("https://api.themoviedb.org/") };
             var token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NzUxMTU1Y2QxZDQ1NjczMGJlOTg1OTViY2RlZTQ4NSIsInN1YiI6IjY1MTJkMDY0ZTFmYWVkMDEzYTBjOGYxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.eWjXyaDpeLGJPrWFfB_ZnAwjz2NldXIsPxKk4D-6tVM";
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var httpClientFactory = new Mock<IHttpClientFactory>();
+            httpClientFactory.Setup(h => h.CreateClient(It.IsAny<string>())).Returns(client);
+            _httpClientFactory = httpClientFactory.Object;
             _httpClient = client;
+            
+            
         }
 
         [Fact()]
         public async void FetchTopRatedItemsAsyncTest_AvecMovie()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -70,7 +78,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchTopRatedItemsAsyncTest_AvecTv()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -90,7 +98,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchTopRatedItemsAsyncTest_Exception_AvecMovieEtCinematographyTv()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -104,7 +112,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchTopRatedItemsAsyncTest_Exception_AvecMovieDetail()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -118,7 +126,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchTopRatedItemsAsyncTest_Exception_SiPageSeizeSuperieurApi()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var clientPageNumber = 1;
             var clientPageSize = 21;
@@ -132,7 +140,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchTopRatedItemsAsyncTest_Page_Seiz3()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             //var clientPageNumber = 1;
             var clientPageSize = 3;
@@ -174,7 +182,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchDiscoveryItemsAsyncTest_AvecMovie()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -194,7 +202,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchDiscoveryItemsAsyncTest_TotalItemsLimiteApiTMBD()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var clientPageNumber = 1;
             var clientPageSize = 10;
@@ -215,7 +223,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchDiscoveryItemsAsyncTest_AvecTv()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var clientPageNumber = 1;
             var clientPageSize = 5;
@@ -235,7 +243,7 @@ namespace BSFlixFlex.Services.Tests
         public async void SearchItemsAsyncTest_AvecMovie()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var search = "a";
             var clientPageNumber = 1;
@@ -257,7 +265,7 @@ namespace BSFlixFlex.Services.Tests
         public async void SearchItemsAsyncTest_AvecTv()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var search = "a";
             var clientPageNumber = 1;
@@ -279,7 +287,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemDetailsAsyncTest_AvecMovieDetails()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var movieId = 114;
             var path = $"3/movie/{movieId}?language=fr-Fr";
@@ -297,7 +305,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemDetailsAsyncTest_AvecTvShowDetails()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var id = 114;
             var path = $"3/tv/{id}?language=fr-Fr";
@@ -322,7 +330,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemDetailsAsyncTest_AvecMovieDetailsEtCinematographyTv_Exption()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var movieId = 114;
 
@@ -333,7 +341,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemDetailsAsyncTest_Exception_AvecMovie()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var movieId = 114;
 
@@ -345,7 +353,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemVideosAsyncTest_AvecMovie()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Movie;
             var movieId = 114;
             var path = $"3/movie/{movieId}/videos?language=fr-Fr";
@@ -363,7 +371,7 @@ namespace BSFlixFlex.Services.Tests
         public async void FetchItemVideosAsyncTest_AvecTv()
         {
             // Arrange
-            var mockService = new ApiTMBDService(_httpClient);
+            var mockService = new ApiTMBDService(_httpClientFactory);
             var cinematography = Cinematography.Tv;
             var movieId = 114;
             var path = $"3/tv/{movieId}/videos?language=fr-Fr";
