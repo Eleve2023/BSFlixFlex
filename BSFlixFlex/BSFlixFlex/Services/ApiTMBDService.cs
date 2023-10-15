@@ -13,7 +13,7 @@ namespace BSFlixFlex.Services
     /// </summary>
     public class ApiTMBDService(IHttpClientFactory httpClientFactory) : IApiTMBDService
     {
-        private readonly HttpClient httpClient = httpClientFactory.CreateClient(THE_MOVIE_API);
+        private readonly HttpClient httpClient = httpClientFactory.CreateClient(HTTP_CLIENT_THE_MOVIE_API);
 
         /// <summary>
         /// Récupère la liste des films ou séries les mieux notés.

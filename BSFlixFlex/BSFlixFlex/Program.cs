@@ -63,7 +63,7 @@ builder.Services.AddControllers();
 // to secrite
 var token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NzUxMTU1Y2QxZDQ1NjczMGJlOTg1OTViY2RlZTQ4NSIsInN1YiI6IjY1MTJkMDY0ZTFmYWVkMDEzYTBjOGYxYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.eWjXyaDpeLGJPrWFfB_ZnAwjz2NldXIsPxKk4D-6tVM";
 
-builder.Services.AddHttpClient(THE_MOVIE_API).ConfigureHttpClient(configureClient =>
+builder.Services.AddHttpClient(HTTP_CLIENT_THE_MOVIE_API).ConfigureHttpClient(configureClient =>
 {
     configureClient.BaseAddress = new Uri("https://api.themoviedb.org/");
     configureClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

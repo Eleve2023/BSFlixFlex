@@ -12,14 +12,15 @@ namespace BSFlixFlex.Client.Services
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => "movie",
-                Cinematography.Tv => "tvshow",
+                Cinematography.Movie => API_PATH_MOVIE,
+                Cinematography.Tv => API_PATH_TVSHOW,
                 _ => throw new NotSupportedException()
             };
-            IEnumerable<KeyValuePair<string, StringValues>> query = [
-                   new("ReturnUrl", clientPageNumber.ToString()),
-                new("Action", clientPageSize.ToString())];
-            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/api/{pathbase}?page={clientPageNumber}");
+
+            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/{pathbase}?page={clientPageNumber}");
+            //IEnumerable<KeyValuePair<string, StringValues>> query = [
+            //       new("ReturnUrl", clientPageNumber.ToString()),
+            //    new("Action", clientPageSize.ToString())];
             //var redirectUrl = UriHelper.BuildRelative(
             //        context.Request.PathBase,
             //        $"/Account/ExternalLogin",
@@ -30,46 +31,46 @@ namespace BSFlixFlex.Client.Services
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => "movie",
-                Cinematography.Tv => "tv",
+                Cinematography.Movie => API_PATH_MOVIE,
+                Cinematography.Tv => API_PATH_TVSHOW,
                 _ => throw new NotSupportedException()
             };
            
-            return await httpClient.GetFromJsonAsync<ApiItemResponse<T>>($"/api/{pathbase}/{id}");
+            return await httpClient.GetFromJsonAsync<ApiItemResponse<T>>($"/{pathbase}/{id}");
         }
 
         public async Task<VideoResponse> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => "movie",
-                Cinematography.Tv => "tv",
+                Cinematography.Movie => API_PATH_VIDEO_MOVIE,
+                Cinematography.Tv => API_PATH_VIDEO_TVSHOW,
                 _ => throw new NotSupportedException()
             };
 
-            return await httpClient.GetFromJsonAsync<VideoResponse>($"/api/videos/{pathbase}/{id}");
+            return await httpClient.GetFromJsonAsync<VideoResponse>($"/{pathbase}/{id}");
         }
 
         public async Task<ApiListResponse<T>> FetchTopRatedItemsAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => "movie",
-                Cinematography.Tv => "tvshow",
+                Cinematography.Movie => API_PATH_MOVIE_TOP_RATED,
+                Cinematography.Tv => API_PATH_TVSHOW_TOP_RATED,
                 _ => throw new NotSupportedException()
             };
-            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/api/{pathbase}/top_rated?page={clientPageNumber}");
+            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/{pathbase}?page={clientPageNumber}");
         }
 
         public async Task<ApiListResponse<T>> SearchItemsAsync<T>(Cinematography cinematography, string search, int clientPageNumber, int clientPageSize = 10) where T : class
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => "movie",
-                Cinematography.Tv => "tv",
+                Cinematography.Movie => API_PATH_SEARCH_MOVIE,
+                Cinematography.Tv => API_PATH_SEARCH_TVSHOW,
                 _ => throw new NotSupportedException()
             };
-            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/api/search/{pathbase}?page={clientPageNumber}");
+            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/{pathbase}?page={clientPageNumber}");
         }
     }
 }
