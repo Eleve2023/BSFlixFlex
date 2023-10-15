@@ -31,8 +31,8 @@ namespace BSFlixFlex.Client.Services
         {
             var pathbase = cinematography switch
             {
-                Cinematography.Movie => API_PATH_MOVIE,
-                Cinematography.Tv => API_PATH_TVSHOW,
+                Cinematography.Movie => API_PATH_MOVIE_DETAIL,
+                Cinematography.Tv => API_PATH_TVSHOW_DETAIL,
                 _ => throw new NotSupportedException()
             };
            
@@ -70,7 +70,7 @@ namespace BSFlixFlex.Client.Services
                 Cinematography.Tv => API_PATH_SEARCH_TVSHOW,
                 _ => throw new NotSupportedException()
             };
-            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/{pathbase}?page={clientPageNumber}");
+            return await httpClient.GetFromJsonAsync<ApiListResponse<T>>($"/{pathbase}?search={search}&&page={clientPageNumber}");
         }
     }
 }

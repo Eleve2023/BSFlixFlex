@@ -3,7 +3,7 @@ using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Components;
 using BSFlixFlex.Data;
 using BSFlixFlex.Identity;
-using BSFlixFlex.MiniApis;
+using BSFlixFlex.MinimalApi;
 using BSFlixFlex.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -78,15 +78,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
-    app.UseSwagger(c =>
-    {
-        c.RouteTemplate = "mycoolapi/swagger/{documentname}/swagger.json";
-    });
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/mycoolapi/swagger/v1/swagger.json", "My Cool API V1");
-        c.RoutePrefix = "mycoolapi/swagger";
-    });
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -103,7 +96,8 @@ app.UseAntiforgery();
 app.MapIdentityApi<ApplicationUser>();
 app.MapGet("/api/test", (ClaimsPrincipal user) => user.Identity!.Name)
     .RequireAuthorization("CookiesOrBearer");
-app.MiniApiApp();
+
+app.MapCinematographys();
 app.MapControllers();
 
 app.MapRazorComponents<App>()
