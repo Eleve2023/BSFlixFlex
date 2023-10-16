@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows
 {
     public class TvShowDetails : DetailsCommonProperty
     {
@@ -46,9 +46,6 @@ namespace BSFlixFlex.Client.Shareds.Models
 
         [JsonPropertyName("original_name")]
         public string? OriginalName { get; set; }
-
-        [JsonPropertyName("production_countries")]
-        public List<ProductionCountry?> ProductionCountry { get; set; } = new();
 
         [JsonPropertyName("seasons")]
         public List<TvShowSeason?> Seasons { get; set; } = new();

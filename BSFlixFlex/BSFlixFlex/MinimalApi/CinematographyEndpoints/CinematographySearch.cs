@@ -1,5 +1,6 @@
 ﻿using BSFlixFlex.Client.Shareds.Interfaces;
-using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace BSFlixFlex.MinimalApi.CinematographyEndpoints

@@ -1,13 +1,14 @@
-﻿using System;
+﻿using BSFlixFlex.Client.Shareds.Models.Cinematographies;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Models
 {
-    public class DiscoverResponse<T> : IDiscoverResponse<T> where T : class
+    public class ApiTmBdDiscoverResponse<T> where T : class
     {
         [JsonPropertyName("page")]
         public int Page { get; set; }
@@ -20,6 +21,5 @@ namespace BSFlixFlex.Client.Shareds.Models
 
         [JsonPropertyName("total_pages")]
         public int TotalPages { get; set; }
-
     }
 }

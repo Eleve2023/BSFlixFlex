@@ -1,5 +1,6 @@
 ﻿using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 using Microsoft.Extensions.Primitives;
 
 using System.Net.Http.Json;
@@ -39,7 +40,7 @@ namespace BSFlixFlex.Client.Services
             return await httpClient.GetFromJsonAsync<ApiItemResponse<T>>($"/{pathbase}/{id}");
         }
 
-        public async Task<VideoResponse> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
+        public async Task<ApiListResponse<Video>> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
         {
             var pathbase = cinematography switch
             {
@@ -48,7 +49,7 @@ namespace BSFlixFlex.Client.Services
                 _ => throw new NotSupportedException()
             };
 
-            return await httpClient.GetFromJsonAsync<VideoResponse>($"/{pathbase}/{id}");
+            return await httpClient.GetFromJsonAsync<ApiListResponse<Video>>($"/{pathbase}/{id}");
         }
 
         public async Task<ApiListResponse<T>> FetchTopRatedItemsAsync<T>(Cinematography cinematography, int clientPageNumber, int clientPageSize = 10) where T : class

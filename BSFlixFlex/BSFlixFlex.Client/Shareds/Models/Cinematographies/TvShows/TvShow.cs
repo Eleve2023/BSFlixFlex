@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows
 {
     public class TvShow : DiscovryCommonProperty
     {

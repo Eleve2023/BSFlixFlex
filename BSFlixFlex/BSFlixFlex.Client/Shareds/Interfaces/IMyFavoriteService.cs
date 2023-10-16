@@ -1,4 +1,5 @@
 ﻿using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 using System.Security.Claims;
 
 namespace BSFlixFlex.Client.Shareds.Interfaces

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies
 {
     public class Video
     {
@@ -32,5 +32,8 @@ namespace BSFlixFlex.Client.Shareds.Models
 
         [JsonPropertyName("type")]
         public string? VideoType { get; set; }
+
+        [JsonPropertyName("published_at")]
+        public string? PublishedAt { get; set; }
     }
 }

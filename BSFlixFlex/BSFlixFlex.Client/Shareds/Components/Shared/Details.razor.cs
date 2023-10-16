@@ -1,5 +1,5 @@
 ﻿using BSFlixFlex.Client.Shareds.Interfaces;
-using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 using Microsoft.AspNetCore.Components;
 
 namespace BSFlixFlex.Client.Shareds.Components.Shared
@@ -31,8 +31,8 @@ namespace BSFlixFlex.Client.Shareds.Components.Shared
                 Item = resultDetail.Item;
 
             var resultvideos = await ApiTMBDService.FetchItemVideosAsync<T>(cinematography, Id);
-            if (resultvideos.IsSuccess && resultvideos.Results != null)
-                videoResults = resultvideos.Results!;
+            if (resultvideos.IsSuccess && resultvideos.Items != null)
+                videoResults = resultvideos.Items;
             await base.OnInitializedAsync();
         }
     }

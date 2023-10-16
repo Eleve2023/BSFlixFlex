@@ -14,6 +14,10 @@ using BSFlixFlex.Client.Shareds.Models;
 using BSFlixFlex.Client.Shareds.Exceptions;
 using Microsoft.Extensions.Http;
 using Moq;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
+using BSFlixFlex.Models;
 
 namespace BSFlixFlex.Services.Tests
 {
@@ -46,7 +50,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             var path = "3/movie/top_rated?page=1&language=fr-Fr";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path);
 
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
@@ -66,7 +70,7 @@ namespace BSFlixFlex.Services.Tests
             Assert.Equal(expected.Items[4].Id, result.Items[^1].Id);
         }
 
-        private static ApiListResponse<T> ParcialArrangeOfDisciverResponse<T>(DiscoverResponse<T>? apiResults) where T : class
+        private static ApiListResponse<T> ParcialArrangeOfDisciverResponse<T>(ApiTmBdDiscoverResponse<T>? apiResults) where T : class
         {
             ApiListResponse<T> expected = new();
             if (apiResults != null)
@@ -84,7 +88,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             var path = "3/tv/top_rated?page=1&language=fr-Fr";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<TvShow>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<TvShow>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -148,9 +152,9 @@ namespace BSFlixFlex.Services.Tests
             var path1 = "3/movie/top_rated?page=1&language=fr-Fr";
             var path2 = "3/movie/top_rated?page=2&language=fr-Fr";
             var path3 = "3/movie/top_rated?page=500&language=fr-Fr";
-            var apiResults1 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path1);
-            var apiResults2 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path2);
-            var apiResults3 = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path3);
+            var apiResults1 = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path1);
+            var apiResults2 = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path2);
+            var apiResults3 = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path3);
 
             var expected1 = ParcialArrangeOfDisciverResponse(apiResults1);
             var expected2 = ParcialArrangeOfDisciverResponse(apiResults2);
@@ -188,7 +192,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             var path = "4/discover/movie?page=1&language=fr-Fr";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -208,7 +212,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 10;
 
             var path = "4/discover/movie?page=1&language=fr-Fr";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -229,7 +233,7 @@ namespace BSFlixFlex.Services.Tests
             var clientPageSize = 5;
 
             var path = "4/discover/tv?page=1&language=fr-Fr";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<TvShow>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<TvShow>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -251,7 +255,7 @@ namespace BSFlixFlex.Services.Tests
 
 
             var path = $"3/search/movie?page=1&language=fr-Fr&query={search}";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<Movie>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<Movie>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -273,7 +277,7 @@ namespace BSFlixFlex.Services.Tests
 
 
             var path = $"3/search/tv?page=1&language=fr-Fr&query={search}";
-            var apiResults = await _httpClient.GetFromJsonAsync<DiscoverResponse<TvShow>>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<TvShow>>(path);
             var expected = ParcialArrangeOfDisciverResponse(apiResults);
 
             // Act
@@ -358,14 +362,14 @@ namespace BSFlixFlex.Services.Tests
             var movieId = 114;
             var path = $"3/movie/{movieId}/videos?language=fr-Fr";
 
-            var apiResults = await _httpClient.GetFromJsonAsync<VideoResponse>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdVideoResponse>(path);
 
             // Act
-            var result = await mockService.FetchItemVideosAsync<VideoResponse>(cinematography, movieId);
+            var result = await mockService.FetchItemVideosAsync<Movie>(cinematography, movieId);
 
             // Assert
             Assert.True(result!.IsSuccess);
-            Assert.Equal(apiResults!.Results.Count, result.Results.Count);
+            Assert.Equal(apiResults!.Results.Count, result.Items.Count);
         }
         [Fact()]
         public async void FetchItemVideosAsyncTest_AvecTv()
@@ -376,14 +380,14 @@ namespace BSFlixFlex.Services.Tests
             var movieId = 114;
             var path = $"3/tv/{movieId}/videos?language=fr-Fr";
 
-            var apiResults = await _httpClient.GetFromJsonAsync<VideoResponse>(path);
+            var apiResults = await _httpClient.GetFromJsonAsync<ApiTmBdVideoResponse>(path);
 
             // Act
-            var result = await mockService.FetchItemVideosAsync<VideoResponse>(cinematography, movieId);
+            var result = await mockService.FetchItemVideosAsync<TvShow>(cinematography, movieId);
 
             // Assert
             Assert.True(result!.IsSuccess);
-            Assert.Equal(apiResults!.Results.Count, result.Results.Count);
+            Assert.Equal(apiResults!.Results.Count, result.Items.Count);
         }
     }
 }

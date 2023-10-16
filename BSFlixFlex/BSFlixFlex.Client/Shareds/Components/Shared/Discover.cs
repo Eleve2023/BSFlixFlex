@@ -1,6 +1,7 @@
 ﻿using BSFlixFlex.Client.Shareds.Components.Pagination;
 using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 using Microsoft.AspNetCore.Components;
 
 namespace BSFlixFlex.Client.Shareds.Components.Shared

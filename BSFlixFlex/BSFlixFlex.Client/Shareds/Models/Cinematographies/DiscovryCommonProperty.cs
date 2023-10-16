@@ -5,8 +5,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BSFlixFlex.Client.Shareds.Models
-{    
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies
+{
     public abstract class DiscovryCommonProperty : IDiscovryCommonProperty
     {
         [JsonPropertyName("genre_ids")]
@@ -35,6 +35,7 @@ namespace BSFlixFlex.Client.Shareds.Models
 
         [JsonPropertyName("poster_path")]
         public string? PosterPath { get; set; }
+
         public virtual string? Title { get; set; }
         public virtual string? OriginalTitle { get; set; }
     }

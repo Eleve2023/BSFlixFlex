@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 
 namespace BSFlixFlex.Client.Services
 {

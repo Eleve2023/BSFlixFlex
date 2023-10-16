@@ -9,6 +9,9 @@ using Xunit;
 using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
 using BSFlixFlex.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
 
 namespace BSFlixFlex.Services.Tests
 {

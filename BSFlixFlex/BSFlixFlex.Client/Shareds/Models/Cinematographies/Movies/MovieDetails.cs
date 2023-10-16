@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies
 {
     public class MovieDetails : DetailsCommonProperty
     {
@@ -21,8 +21,7 @@ namespace BSFlixFlex.Client.Shareds.Models
         [JsonPropertyName("original_title")]
         public override string? OriginalTitle { get; set; }
 
-        [JsonPropertyName("production_countries")]
-        public List<ProductionCountry?> ProductionCountries { get; set; } = new();
+        
 
         [JsonPropertyName("release_date")]
         public DateTime ReleaseDate { get; set; }

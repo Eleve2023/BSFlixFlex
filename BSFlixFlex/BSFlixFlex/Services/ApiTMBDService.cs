@@ -1,8 +1,12 @@
 ﻿using BSFlixFlex.Client.Shareds.Exceptions;
 using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
 using BSFlixFlex.Exceptions;
 using BSFlixFlex.Exceptions.ApiTMBD;
+using BSFlixFlex.Models;
 using System.IO;
 using System.Linq;
 
@@ -85,15 +89,14 @@ namespace BSFlixFlex.Services
         /// <param name="cinematography">Type de cinématographie (Film ou Série).</param>
         /// <param name="id">Identifiant du film ou de la série.</param>
         /// <returns>Les vidéos associées au film ou à la série spécifié.</returns>
-        public async Task<VideoResponse> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
+        public async Task<ApiListResponse<Video>> FetchItemVideosAsync<T>(Cinematography cinematography, int id)
         {
             try
             {
-                var result = (await httpClient.GetFromJsonAsync<VideoResponse>($"3/{cinematography.ToString().ToLower()}/{id}/videos?language=fr-Fr"))
+                var result = (await httpClient.GetFromJsonAsync<ApiTmBdVideoResponse>($"3/{cinematography.ToString().ToLower()}/{id}/videos?language=fr-Fr"))
                     ?? throw new NullResultsApiTMBDException();
 
-                result.IsSuccess = true;
-                return result;
+                return new (){IsSuccess = true, Items = result.Results!, TotalItems = result.Results.Count };
             }
             catch (HttpRequestException e)
             {
@@ -189,12 +192,12 @@ namespace BSFlixFlex.Services
             };
         }
 
-        private async Task<DiscoverResponse<T>> GetDiscoverResponseAsync<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        private async Task<ApiTmBdDiscoverResponse<T>> GetDiscoverResponseAsync<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
         {
-            DiscoverResponse<T> result = null!;
+            ApiTmBdDiscoverResponse<T> result = null!;
             try
             {
-                result = (await httpClient.GetFromJsonAsync<DiscoverResponse<T>>(getRequestUri(apiPageNumber)))
+                result = (await httpClient.GetFromJsonAsync<ApiTmBdDiscoverResponse<T>>(getRequestUri(apiPageNumber)))
                     ?? throw new NullResultsApiTMBDException();
             }
             catch (HttpRequestException m)
@@ -232,7 +235,7 @@ namespace BSFlixFlex.Services
         /// <param name="apiPageNumber"></param>
         /// <param name="getRequestUri">Fonction pour obtenir l'URI de requête.</param>
         /// <returns></returns>
-        private async Task<DiscoverResponse<T>> HandleApiPaginationErrors<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
+        private async Task<ApiTmBdDiscoverResponse<T>> HandleApiPaginationErrors<T>(int apiPageNumber, Func<int, string> getRequestUri) where T : class
         {
             var apiResultsTest = await GetDiscoverResponseAsync<T>(1, getRequestUri);
 

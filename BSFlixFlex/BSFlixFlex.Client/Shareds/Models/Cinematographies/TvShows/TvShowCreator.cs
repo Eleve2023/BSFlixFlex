@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BSFlixFlex.Client.Shareds.Models
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows
 {
     public class TvShowCreator
     {

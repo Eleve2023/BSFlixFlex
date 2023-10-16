@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
 
-namespace BSFlixFlex.Client.Shareds.Models
-{   
+namespace BSFlixFlex.Client.Shareds.Models.Cinematographies
+{
     [JsonDerivedType(typeof(MovieDetails), typeDiscriminator: "MovieDetails")]
     [JsonDerivedType(typeof(Movie), typeDiscriminator: "Movie")]
     [JsonDerivedType(typeof(TvShowDetails), typeDiscriminator: "TvShowDetails")]

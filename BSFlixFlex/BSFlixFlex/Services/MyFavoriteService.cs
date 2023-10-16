@@ -1,5 +1,8 @@
 ﻿using BSFlixFlex.Client.Shareds.Interfaces;
 using BSFlixFlex.Client.Shareds.Models;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.Movies;
+using BSFlixFlex.Client.Shareds.Models.Cinematographies.TvShows;
 using BSFlixFlex.Data;
 using BSFlixFlex.Models;
 using Microsoft.AspNetCore.Components.Authorization;

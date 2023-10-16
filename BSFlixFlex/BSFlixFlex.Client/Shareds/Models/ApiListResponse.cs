@@ -9,7 +9,7 @@
         /// <summary>
         /// La liste des éléments retournés par l'API.
         /// </summary>
-        public List<T> Items { get; set; } = new List<T>();
+        public List<T> Items { get; set; } = [];
 
         /// <summary>
         /// Le nombre total d'éléments disponibles.
