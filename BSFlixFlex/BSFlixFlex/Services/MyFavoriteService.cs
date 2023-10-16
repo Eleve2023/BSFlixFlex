@@ -93,11 +93,13 @@ public class MyFavoriteService(
                         .AddAsync(new() { Cinematography = cinematography, UserId = new Guid(userIdentifier), IdCinematography = id });
                     await appDbContext.SaveChangesAsync();
                 }
+                else
+                    throw new Exception("Exist");
             }
-            else throw new Exception();
+            else throw new Exception("Not Found");
         }
         else
-            throw new Exception();
+            throw new Exception("Not Authenticated");
 
     }
 
